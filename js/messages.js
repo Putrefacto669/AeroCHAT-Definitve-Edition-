@@ -80,16 +80,16 @@ function buildMessageRow(msg) {
     case 0: innerHtml = '<span class="msg-text">' + htmlEncode(msg.content) + '</span>'; break;
     case 1: innerHtml = '<img src="' + escapeHtml(msg.file_path) + '" alt="' + htmlEncode(msg.file_name) + '" class="msg-image" onclick="openLightbox(this)"/>'; break;
     case 5: innerHtml = '<img src="' + escapeHtml(msg.file_path) + '" class="msg-sticker" alt="sticker"/>'; break;
-    case 2: innerHtml = '<div class="msg-audio"><span class="file-icon">🎵</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><audio controls src="' + escapeHtml(msg.file_path) + '"></audio></div></div>'; break;
+    case 2: innerHtml = '<div class="msg-audio"><span class="file-icon">' + acIcon('music', 16) + '</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><audio controls src="' + escapeHtml(msg.file_path) + '"></audio></div></div>'; break;
     case 4: innerHtml = '<div class="msg-video"><video controls preload="metadata" src="' + escapeHtml(msg.file_path) + '"></video><div class="file-name">' + htmlEncode(msg.file_name) + '</div></div>'; break;
-    default: innerHtml = '<div class="msg-doc"><span class="file-icon">📄</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><a href="' + escapeHtml(msg.file_path) + '" download="' + htmlEncode(msg.file_name) + '" class="file-download">Descargar</a></div></div>'; break;
+    default: innerHtml = '<div class="msg-doc"><span class="file-icon">' + acIcon('file', 16) + '</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><a href="' + escapeHtml(msg.file_path) + '" download="' + htmlEncode(msg.file_name) + '" class="file-download">Descargar</a></div></div>'; break;
   }
 
   var metaHtml = '<div class="msg-meta">';
   if (msg.edited_at) metaHtml += '<span class="msg-edited">editado</span>';
   metaHtml += '<span class="msg-time">' + formatTime(msg.created_at) + '</span>';
   if (isMine && !msg.is_deleted) {
-    metaHtml += '<span class="msg-seen">' + (acMsgSeen(msg) ? '✓✓' : '✓') + '</span>';
+    metaHtml += '<span class="msg-seen">' + (acMsgSeen(msg) ? acIcon('check-all', 11) : acIcon('check', 11)) + '</span>';
   }
   metaHtml += '</div>';
 
@@ -107,17 +107,17 @@ function buildMessageRow(msg) {
     Object.keys(grouped).forEach(function (e) {
       reactionsHtml += '<button class="reaction-chip' + (mineSet[e] ? ' mine' : '') + '" data-emoji="' + e + '" onclick="toggleReaction(\'' + msg.id + '\',\'' + e + '\')"><span class="rc-emoji">' + e + '</span><span class="rc-count">' + grouped[e] + '</span></button>';
     });
-    reactionsHtml += '<button class="reaction-add" title="Reaccionar" onclick="openReactionPicker(\'' + msg.id + '\', event)">＋</button></div>';
+    reactionsHtml += '<button class="reaction-add" title="Reaccionar" onclick="openReactionPicker(\'' + msg.id + '\', event)">' + acIcon('plus', 11) + '</button></div>';
   }
 
   var actionsHtml = '';
   if (!msg.is_deleted) {
     var preview = type === 0 ? String(msg.content || '').slice(0, 40) : '[' + typeName(type) + ']';
     actionsHtml = '<div class="msg-actions">' +
-      '<button class="action-btn" title="Responder" onclick="respondTo(\'' + msg.id + '\',\'' + jsEncode(msg.sender_name || '') + '\',\'' + jsEncode(preview) + '\')">↩</button>';
+      '<button class="action-btn" title="Responder" onclick="respondTo(\'' + msg.id + '\',\'' + jsEncode(msg.sender_name || '') + '\',\'' + jsEncode(preview) + '\')">' + acIcon('reply', 13) + '</button>';
     if (isMine) {
-      var editBtn = type === 0 ? '<button class="action-btn" onclick="openEdit(\'' + msg.id + '\',\'' + jsEncode(msg.content) + '\')">✏</button>' : '';
-      actionsHtml += editBtn + '<button class="action-btn del" onclick="confirmDelete(\'' + msg.id + '\')">🗑</button>';
+      var editBtn = type === 0 ? '<button class="action-btn" onclick="openEdit(\'' + msg.id + '\',\'' + jsEncode(msg.content) + '\')">' + acIcon('edit', 13) + '</button>' : '';
+      actionsHtml += editBtn + '<button class="action-btn del" onclick="confirmDelete(\'' + msg.id + '\')">' + acIcon('trash', 13) + '</button>';
     }
     actionsHtml += '</div>';
   }
@@ -166,7 +166,7 @@ function applyDeletedState(row) {
 }
 function updateSeen(row, msg) {
   var seen = row.querySelector('.msg-seen');
-  if (seen) seen.textContent = acMsgSeen(msg) ? '✓✓' : '✓';
+  if (seen) seen.innerHTML = acMsgSeen(msg) ? acIcon('check-all', 11) : acIcon('check', 11);
 }
 
 // ── Eventos en vivo (los invoca realtime.js) ────────────────────────
@@ -273,9 +273,9 @@ function respondTo(id, name, content) {
   AC.replyTo = { id: id, name: name, content: content };
   var bar = document.getElementById('replyBar');
   if (!bar) return;
-  bar.innerHTML = '<span class="reply-bar-label">↩ ' + htmlEncode(name) + '</span>' +
+  bar.innerHTML = '<span class="reply-bar-label">' + acIcon('reply', 13) + ' ' + htmlEncode(name) + '</span>' +
     '<span class="reply-bar-content">' + htmlEncode(content) + '</span>' +
-    '<button type="button" class="reply-bar-close" onclick="cancelReply()">✕</button>';
+    '<button type="button" class="reply-bar-close" onclick="cancelReply()">' + acIcon('close', 13) + '</button>';
   bar.classList.add('active');
   var inp = document.getElementById('msgInput');
   if (inp) inp.focus();
@@ -361,6 +361,7 @@ function acPickAttach(type, input) {
 }
 
 function acSendSticker(path) {
+  acRpc('record_sticker_use', { p_path: path }).catch(function () {});
   acSendMessageContent('sticker', '', path, 'sticker.png', null, AC.replyTo ? AC.replyTo.id : null);
 }
 

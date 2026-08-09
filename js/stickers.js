@@ -83,8 +83,8 @@ function buildStickerData(packs) {
 function renderStickerTabs() {
   var bar = document.getElementById('stickerTabs');
   if (!bar) return;
-  var html = '<button type="button" class="sticker-tab" data-tab="fav">★ Favoritos</button>' +
-    '<button type="button" class="sticker-tab" data-tab="used">⚡ Usados</button>';
+  var html = '<button type="button" class="sticker-tab" data-tab="fav">' + acIcon('star-fill', 12) + ' Favoritos</button>' +
+    '<button type="button" class="sticker-tab" data-tab="used">' + acIcon('clock', 12) + ' Recientes</button>';
   stickerData.packs.forEach(function (p, i) {
     html += '<button type="button" class="sticker-tab" data-tab="p' + i + '">' + htmlEncode(p.name) + '</button>';
   });
@@ -100,7 +100,7 @@ function stickerGrid(items) {
     var s = x.sticker;
     return '<div class="sticker-cell" onclick="sendSticker(\'' + s.path + '\')" title="' + htmlEncode(s.name) + '">' +
       '<img src="' + s.path + '" alt="' + htmlEncode(s.name) + '" loading="lazy"/>' +
-      '<button type="button" class="sticker-fav' + (s.fav ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavorite(\'' + s.path + '\', this)">★</button>' +
+      '<button type="button" class="sticker-fav' + (s.fav ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavorite(\'' + s.path + '\', this)">' + acIcon(s.fav ? 'star-fill' : 'star', 13) + '</button>' +
       '</div>';
   }).join('');
 }
@@ -129,6 +129,7 @@ function updateFavoriteFlag(path, on) {
 
 function toggleFavorite(path, btn) {
   acToggleStickerFavorite(path).then(function (on) {
+    if (btn) btn.innerHTML = acIcon(on ? 'star-fill' : 'star', 13);
     btn.classList.toggle('on', on);
     updateFavoriteFlag(path, on);
     if (stickerTab === 'fav' || stickerTab === 'used') selectStickerTab(stickerTab);
@@ -147,21 +148,103 @@ function importStickerPack() {
   var url = (input.value || '').trim();
   if (!url) return;
   var btn = document.querySelector('.sticker-import-btn');
-  var old = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  var old = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '…'; }
+
+  function done() { if (btn) { btn.disabled = false; btn.innerHTML = old; } }
+
+  function onSuccess(d) {
+    showToast('Paquete importado: ' + d.name + ' (' + d.count + ' stickers)', 'success');
+    stickerData = null;
+    loadStickers();
+    input.value = '';
+  }
+
   acImportStickerPack(url)
-    .then(function (d) {
-      showToast('Paquete importado: ' + d.name + ' (' + d.count + ' stickers)', 'success');
-      stickerData = null;
-      loadStickers();
-      input.value = '';
-    })
+    .then(onSuccess)
     .catch(function (err) {
-      var msg = (err && err.message) || 'No se pudo importar';
+      console.warn('AeroChat: Edge Function no disponible, importando desde el navegador…', err && err.message);
+      return importStickerPackClient(url).then(onSuccess);
+    })
+    .catch(function (err2) {
+      var msg = (err2 && err2.message) || 'No se pudo importar';
       showToast('No se pudo importar: ' + msg, 'error');
     })
-    .then(function () {
-      if (btn) { btn.disabled = false; btn.textContent = old; }
+    .then(done);
+}
+
+// ── Importación directa desde el navegador (sticker.ly) ─────────────
+// Respaldo cuando la Edge Function import-sticker no está desplegada.
+// La API de sticker.ly y su CDN permiten CORS (Access-Control-Allow-Origin: *).
+function stickerlyPackId(url) {
+  var s = String(url || '').trim();
+  var m = s.match(/\/(?:s|pack)\/([A-Za-z0-9]{4,12})(?:[?#/]|$)/i);
+  if (m) return m[1].toUpperCase();
+  m = s.match(/^stickerly:\/\/[^/\s]*\/?([A-Za-z0-9]{4,12})(?:[?#]|$)/i);
+  if (m) return m[1].toUpperCase();
+  if (/^[A-Za-z0-9]{4,12}$/.test(s)) return s.toUpperCase();
+  return null;
+}
+
+function stickerlyLooksLikeImage(buf) {
+  if (buf.byteLength < 12) return false;
+  var b = new Uint8Array(buf);
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return true;
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38) return true;
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return true;
+  return false;
+}
+
+function stickerlyMime(fn) {
+  if (/\.png$/i.test(fn)) return 'image/png';
+  if (/\.gif$/i.test(fn)) return 'image/gif';
+  if (/\.(jpg|jpeg)$/i.test(fn)) return 'image/jpeg';
+  return 'image/webp';
+}
+
+function importStickerPackClient(url) {
+  var packId = stickerlyPackId(url);
+  if (!packId) return Promise.reject(new Error('Link de sticker.ly no reconocido'));
+
+  return fetch('https://api.sticker.ly/v3.1/stickerPack/' + encodeURIComponent(packId), {
+    headers: { 'Accept': 'application/json' }
+  })
+    .then(function (r) { if (!r.ok) throw new Error('El paquete no existe (' + r.status + ')'); return r.json(); })
+    .then(function (data) {
+      var res = data && data.result;
+      if (!res || typeof res.resourceUrlPrefix !== 'string' || !Array.isArray(res.stickers) || !res.stickers.length) {
+        throw new Error('El paquete no tiene stickers');
+      }
+      var name = typeof res.name === 'string' && res.name ? res.name : packId;
+      var prefix = res.resourceUrlPrefix;
+      var files = res.stickers.slice(0, 100);
+      var ok = 0;
+      var chain = Promise.resolve();
+      files.forEach(function (s) {
+        chain = chain.then(function () {
+          if (!s || typeof s.fileName !== 'string') return;
+          var fn = s.fileName;
+          return fetch(prefix + fn)
+            .then(function (rr) { if (!rr.ok) throw new Error('bad'); return rr.arrayBuffer(); })
+            .then(function (buf) {
+              if (!stickerlyLooksLikeImage(buf)) throw new Error('bad');
+              return AC.supabase.storage.from('stickers').upload(AC.me.id + '/' + packId + '/' + fn, buf, {
+                contentType: stickerlyMime(fn),
+                cacheControl: '31536000',
+                upsert: true
+              });
+            })
+            .then(function (up) { if (!up.error) ok++; })
+            .catch(function () {});
+        });
+      });
+      return chain.then(function () {
+        if (!ok) throw new Error('No se pudo descargar ningún sticker');
+        return acRpc('set_sticker_pack', { p_pack_id: packId, p_name: name }).then(function () {
+          return { name: name, pack_id: packId, count: ok };
+        });
+      });
     });
 }
 
