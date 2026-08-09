@@ -76,8 +76,8 @@ function submitRegister() {
     showError('El usuario solo puede tener letras, números, guiones y puntos.');
     return;
   }
-  if (password.length < 4) {
-    showError('La contraseña debe tener al menos 4 caracteres.');
+  if (password.length < 6) {
+    showError('La contraseña debe tener al menos 6 caracteres.');
     return;
   }
   if (password !== confirm) {
