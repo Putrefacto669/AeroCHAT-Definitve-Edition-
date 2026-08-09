@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú">☰</button>
+      <a href="#" id="headerLink" class="chat-header-link">
+        <span id="headerAvatar" class="avatar avatar-md"></span>
+        <div class="chat-header-info">
+          <div class="chat-header-name">
+            <span id="headerName">…</span>
+            <span class="presence-dot" id="headerDot" data-userid=""></span>
+          </div>
+          <div class="chat-header-sub" id="headerSub"></div>
+        </div>
+      </a>
+      <button class="icon-btn" title="Buscar" onclick="toggleSearch()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="icon-btn icon-btn-call" title="Llamada de voz" id="callAudioBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="icon-btn icon-btn-call icon-btn-video" title="Videollamada" id="callVideoBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </button>
+    </div>
+
+    <div class="search-panel" id="searchPanel" hidden>
+      <div class="search-panel-head">
+        <span class="search-ic">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" id="searchInput" placeholder="Buscar en la conversación…" autocomplete="off"/>
+        <span class="search-count" id="searchCount" hidden></span>
+        <button type="button" class="icon-btn icon-btn-clear" onclick="closeSearch()" title="Cerrar">✕</button>
+      </div>
+      <div class="search-panel-results" id="searchResults"></div>
+    </div>
+
+    <div class="messages-area" id="messages">
+      <div class="no-messages">Nada por acá todavía — ¡arrancá la conversación!</div>
+    </div>
+
+    <div class="input-area">
+      <div class="attach-panel" id="attachPanel">
+        <div class="attach-options">
+          <label class="attach-opt">🖼 Imagen<input type="file" accept="image/*" onchange="acPickAttach('image', this)"/></label>
+          <label class="attach-opt">🎵 Audio<input type="file" accept="audio/*" onchange="acPickAttach('audio', this)"/></label>
+          <label class="attach-opt">🎬 Video<input type="file" accept="video/*" onchange="acPickAttach('video', this)"/></label>
+          <label class="attach-opt">📄 Documento<input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" onchange="acPickAttach('document', this)"/></label>
+        </div>
+      </div>
+
+      <div class="reply-bar" id="replyBar"></div>
+
+      <div class="sticker-panel" id="stickerPanel" hidden>
+        <div class="sticker-import">
+          <input type="text" id="stickerLink" placeholder="Pega el link del paquete sticker.ly…" autocomplete="off"/>
+          <button type="button" class="sticker-import-btn" onclick="importStickerPack()">Importar</button>
+        </div>
+        <div class="sticker-tabs" id="stickerTabs"></div>
+        <div class="sticker-panel-body" id="stickerPanelBody"></div>
+      </div>
+
+      <div class="send-form" id="sendForm">
+        <button type="button" class="icon-btn icon-btn-attach" onclick="toggleAttach()" title="Adjuntar">📎</button>
+        <button type="button" class="icon-btn icon-btn-sticker" onclick="toggleStickers()" title="Stickers">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3z"/><path d="M15 3v6h6"/><path d="M7 13h10"/><path d="M7 17h7"/></svg>
+        </button>
+        <input type="text" id="msgInput" placeholder="Mensaje…" autocomplete="off" class="msg-input"/>
+        <button class="icon-btn icon-btn-send" id="sendBtn" title="Enviar">➤</button>
+      </div>
+      <div id="typingIndicator" class="typing-indicator"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>Editar mensaje</h3>
+    <div>
+      <input type="hidden" id="editMsgId"/>
+      <textarea id="editContent" class="edit-textarea"></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="submitEdit()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Eliminar mensaje</h3>
+    <p>Esta acción no se puede deshacer.</p>
+    <div>
+      <input type="hidden" id="deleteMsgId"/>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="submitDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>

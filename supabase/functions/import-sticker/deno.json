@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "start": "deno serve --port 54321 index.ts"
+  },
+  "permissions": {
+    "net": ["api.sticker.ly", "cdn.sticker.ly", "stickers.ly", "https://*"]
+  },
+  "imports": {
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@2"
+  }
+}

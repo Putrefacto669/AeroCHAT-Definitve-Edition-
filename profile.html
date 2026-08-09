@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <div class="profile-main">
+    <div class="profile-header-bar">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú">☰</button>
+      <span style="font-size:.9rem;color:var(--text-2)">Perfil</span>
+    </div>
+
+    <div class="profile-container">
+      <div class="profile-banner" id="bannerDiv">
+        <div class="profile-banner-overlay"></div>
+        <div id="bannerEditWrap" hidden>
+          <button type="button" class="banner-edit-btn" onclick="document.getElementById('bannerFileInput').click()">🖼 Cambiar banner</button>
+          <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="profileBannerChanged(this)"/>
+        </div>
+      </div>
+
+      <div class="profile-top">
+        <div class="profile-avatar-wrap">
+          <span id="profileAvatar" class="avatar avatar-lg"></span>
+          <div id="avatarEditWrap" hidden>
+            <button type="button" class="avatar-edit-btn" title="Cambiar foto" onclick="document.getElementById('avatarFileInput').click()">📷</button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="profileAvatarChanged(this)"/>
+          </div>
+        </div>
+
+        <div class="profile-info-row">
+          <div class="profile-name">
+            <span id="profileName"></span>
+            <span class="presence-dot" id="profileDot" data-userid=""></span>
+          </div>
+          <div class="profile-username">
+            <span id="profileUsername"></span>
+            <span id="profileOnline" class="online-label"></span>
+          </div>
+          <div class="profile-status" id="profileStatus" hidden></div>
+        </div>
+
+        <div class="profile-btns" id="profileFriendActions"></div>
+      </div>
+
+      <div class="profile-section" id="youtubeSection" hidden>
+        <div class="profile-section-title">🎵 Canción favorita</div>
+        <div class="yt-wrap">
+          <iframe id="youtubeFrame" title="Canción favorita" frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title">Amigos <span id="friendCountTitle">(0)</span></div>
+        <div class="friends-grid" id="friendsGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

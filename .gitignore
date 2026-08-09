@@ -1,0 +1,13 @@
+# Node
+node_modules/
+*.log
+
+# Supabase CLI local env (nunca subir la service key)
+supabase/.temp/
+supabase/.env*
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/

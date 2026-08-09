@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estados — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <div class="chat-main status-main">
+    <div class="chat-header">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú">☰</button>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Estados</div>
+        <div class="chat-header-sub">Solo tus amigos pueden verlos</div>
+      </div>
+      <button class="btn btn-ghost btn-new-status" onclick="openNewStatus()">＋ Nuevo</button>
+    </div>
+
+    <div class="status-viewer" id="statusViewer">
+      <div class="status-progress" id="statusProgress"></div>
+      <div class="status-head">
+        <span class="status-avatar" id="statusAvatar"></span>
+        <div>
+          <div class="status-name" id="statusName"></div>
+          <div class="status-time" id="statusTime"></div>
+        </div>
+      </div>
+      <div class="status-body" id="statusBody"></div>
+      <div class="status-nav status-nav-prev" id="navPrev" title="Anterior"></div>
+      <div class="status-nav status-nav-next" id="navNext" title="Siguiente"></div>
+    </div>
+
+    <div class="status-actions" id="statusActions">
+      <button class="btn btn-ghost" id="replyBtn" onclick="openCompose('reply')">💬 Responder</button>
+      <button class="btn btn-ghost" id="mentionBtn" onclick="openCompose('mention')">&#64; Mencionar</button>
+      <button class="btn btn-danger" id="deleteBtn" onclick="deleteStatus()">🗑 Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Compose modal (responder / mencionar) -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal">
+    <h3 id="composeTitle">Responder</h3>
+    <div class="field" id="mentionPickWrap" style="display:none">
+      <label for="mentionPick">Elegí a quién mencionar</label>
+      <select id="mentionPick" class="edit-textarea"></select>
+    </div>
+    <div class="field">
+      <label for="composeText" id="composeLabel">Mensaje</label>
+      <textarea id="composeText" class="edit-textarea" rows="3"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('composeModal')">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="sendCompose()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/status.js"></script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+// ═══════════════════════════════════════════════════════════════════
+//  AeroChat · messages.js
+//  ------------------------------------------------------------------
+//  Render compartido de burbujas de mensaje (DM y grupos), acciones
+//  (responder, editar, borrar, reaccionar), búsqueda, lightbox y
+//  recepción en vivo vía Realtime (acHandleLiveMessage/Reaction).
+//  Usa el estado global AC.view (configurado por cada página).
+//  ═══════════════════════════════════════════════════════════════════
+
+function htmlEncode(s) { return escapeHtml(s); }
+
+function formatTime(d) {
+  var dt = new Date(d);
+  return String(dt.getHours()).padStart(2, '0') + ':' + String(dt.getMinutes()).padStart(2, '0');
+}
+function localDateKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function normalizeType(t) {
+  if (typeof t === 'number') return t;
+  switch (String(t).toLowerCase()) {
+    case 'text': return 0;
+    case 'image': return 1;
+    case 'audio': return 2;
+    case 'video': return 4;
+    case 'sticker': return 5;
+    default: return 3;
+  }
+}
+function typeName(t) {
+  var n = normalizeType(t);
+  return n === 0 ? 'texto' : n === 1 ? 'imagen' : n === 2 ? 'audio' : n === 4 ? 'video' : n === 5 ? 'sticker' : 'archivo';
+}
+function scrollToBottom() {
+  var msgs = document.getElementById('messages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function acMsgRow(id) { return document.querySelector('.msg-row[data-id="' + id + '"]'); }
+function acIsMine(msg) { return msg.sender_id === AC.me.id; }
+function acMsgSeen(msg) {
+  var readBy = msg.read_by || [];
+  if (AC.view.kind === 'direct') {
+    return AC.view.partner && readBy.indexOf(AC.view.partner.id) >= 0;
+  }
+  return readBy.length > 0;
+}
+
+// ── Burbuja de mensaje ──────────────────────────────────────────────
+function buildMessageRow(msg) {
+  var isMine = acIsMine(msg);
+  var side = isMine ? 'mine' : 'theirs';
+
+  // avatar del otro (solo DM)
+  var avatarHtml = '';
+  if (!isMine && AC.view.kind === 'direct') {
+    var p = AC.view.partner || {};
+    if (p.avatar_path) {
+      avatarHtml = '<a href="profile.html?u=' + msg.sender_id + '"><img src="' + escapeHtml(p.avatar_path) + '" class="avatar avatar-sm" alt=""/></a>';
+    } else {
+      avatarHtml = '<a href="profile.html?u=' + msg.sender_id + '"><span class="avatar avatar-sm" style="background:' + escapeHtml(msg.sender_color || '#6C63FF') + '">' + escapeHtml((msg.sender_name || '?').charAt(0)) + '</span></a>';
+    }
+  }
+
+  // nombre del remitente (solo grupos)
+  var senderHtml = '';
+  if (!isMine && AC.view.kind === 'group') {
+    senderHtml = '<span class="msg-sender" style="color:' + escapeHtml(msg.sender_color || '#6C63FF') + '">' + htmlEncode(msg.sender_name) + '</span>';
+  }
+
+  var replyHtml = '';
+  if (msg.reply_to_id) {
+    replyHtml = '<div class="msg-reply"><span class="msg-reply-sender">' + htmlEncode(msg.reply_to_sender || '') + '</span>' +
+      '<span class="msg-reply-content">' + htmlEncode(msg.reply_to_content || '') + '</span></div>';
+  }
+
+  var type = normalizeType(msg.type);
+  var innerHtml = '';
+  switch (type) {
+    case 0: innerHtml = '<span class="msg-text">' + htmlEncode(msg.content) + '</span>'; break;
+    case 1: innerHtml = '<img src="' + escapeHtml(msg.file_path) + '" alt="' + htmlEncode(msg.file_name) + '" class="msg-image" onclick="openLightbox(this)"/>'; break;
+    case 5: innerHtml = '<img src="' + escapeHtml(msg.file_path) + '" class="msg-sticker" alt="sticker"/>'; break;
+    case 2: innerHtml = '<div class="msg-audio"><span class="file-icon">🎵</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><audio controls src="' + escapeHtml(msg.file_path) + '"></audio></div></div>'; break;
+    case 4: innerHtml = '<div class="msg-video"><video controls preload="metadata" src="' + escapeHtml(msg.file_path) + '"></video><div class="file-name">' + htmlEncode(msg.file_name) + '</div></div>'; break;
+    default: innerHtml = '<div class="msg-doc"><span class="file-icon">📄</span><div><div class="file-name">' + htmlEncode(msg.file_name) + '</div><a href="' + escapeHtml(msg.file_path) + '" download="' + htmlEncode(msg.file_name) + '" class="file-download">Descargar</a></div></div>'; break;
+  }
+
+  var metaHtml = '<div class="msg-meta">';
+  if (msg.edited_at) metaHtml += '<span class="msg-edited">editado</span>';
+  metaHtml += '<span class="msg-time">' + formatTime(msg.created_at) + '</span>';
+  if (isMine && !msg.is_deleted) {
+    metaHtml += '<span class="msg-seen">' + (acMsgSeen(msg) ? '✓✓' : '✓') + '</span>';
+  }
+  metaHtml += '</div>';
+
+  var reactionsHtml = '';
+  if (!msg.is_deleted) {
+    var grouped = {};
+    var mineSet = {};
+    if (msg.reactions && msg.reactions.length) {
+      msg.reactions.forEach(function (r) {
+        grouped[r.emoji] = (grouped[r.emoji] || 0) + 1;
+        if (r.user_id === AC.me.id) mineSet[r.emoji] = 1;
+      });
+    }
+    reactionsHtml = '<div class="msg-reactions">';
+    Object.keys(grouped).forEach(function (e) {
+      reactionsHtml += '<button class="reaction-chip' + (mineSet[e] ? ' mine' : '') + '" data-emoji="' + e + '" onclick="toggleReaction(\'' + msg.id + '\',\'' + e + '\')"><span class="rc-emoji">' + e + '</span><span class="rc-count">' + grouped[e] + '</span></button>';
+    });
+    reactionsHtml += '<button class="reaction-add" title="Reaccionar" onclick="openReactionPicker(\'' + msg.id + '\', event)">＋</button></div>';
+  }
+
+  var actionsHtml = '';
+  if (!msg.is_deleted) {
+    var preview = type === 0 ? String(msg.content || '').slice(0, 40) : '[' + typeName(type) + ']';
+    actionsHtml = '<div class="msg-actions">' +
+      '<button class="action-btn" title="Responder" onclick="respondTo(\'' + msg.id + '\',\'' + jsEncode(msg.sender_name || '') + '\',\'' + jsEncode(preview) + '\')">↩</button>';
+    if (isMine) {
+      var editBtn = type === 0 ? '<button class="action-btn" onclick="openEdit(\'' + msg.id + '\',\'' + jsEncode(msg.content) + '\')">✏</button>' : '';
+      actionsHtml += editBtn + '<button class="action-btn del" onclick="confirmDelete(\'' + msg.id + '\')">🗑</button>';
+    }
+    actionsHtml += '</div>';
+  }
+
+  var bubble = document.createElement('div');
+  bubble.className = 'bubble ' + side + (type === 5 ? ' sticker' : '') + (msg.is_deleted ? ' deleted' : '');
+  bubble.innerHTML = senderHtml + replyHtml + innerHtml + metaHtml + reactionsHtml + actionsHtml;
+
+  var row = document.createElement('div');
+  row.className = 'msg-row ' + side;
+  row.setAttribute('data-id', msg.id);
+  row.innerHTML = avatarHtml;
+  row.appendChild(bubble);
+  return row;
+}
+
+function addMessageToArea(msg) {
+  var area = document.getElementById('messages');
+  if (!area) return;
+  if (acMsgRow(msg.id)) return;   // ya está (optimismo / duplicado realtime)
+
+  var noMsg = area.querySelector('.no-messages');
+  if (noMsg) noMsg.remove();
+
+  var created = new Date(msg.created_at);
+  var dateKey = localDateKey(created);
+  var lastDivider = area.querySelector('.date-divider:last-child');
+  if (!lastDivider || lastDivider.getAttribute('data-date') !== dateKey) {
+    var d = document.createElement('div');
+    d.className = 'date-divider';
+    d.setAttribute('data-date', dateKey);
+    d.textContent = created.toLocaleDateString('es-GT', { day: 'numeric', month: 'long' });
+    area.appendChild(d);
+  }
+  area.appendChild(buildMessageRow(msg));
+}
+
+function applyDeletedState(row) {
+  var actions = row.querySelector('.msg-actions'); if (actions) actions.remove();
+  var reactions = row.querySelector('.msg-reactions'); if (reactions) reactions.remove();
+  var bubble = row.querySelector('.bubble');
+  if (bubble) {
+    bubble.classList.add('deleted');
+    bubble.innerHTML = '<span class="msg-text">Mensaje eliminado</span><div class="msg-meta"></div>';
+  }
+}
+function updateSeen(row, msg) {
+  var seen = row.querySelector('.msg-seen');
+  if (seen) seen.textContent = acMsgSeen(msg) ? '✓✓' : '✓';
+}
+
+// ── Eventos en vivo (los invoca realtime.js) ────────────────────────
+function acHandleLiveMessage(m, eventType) {
+  if (eventType === 'INSERT') {
+    if (acMsgRow(m.id)) return;
+    addMessageToArea(m);
+    if (m.sender_id !== AC.me.id) scrollToBottom();
+    return;
+  }
+  var row = acMsgRow(m.id);
+  if (!row) return;
+  if (m.is_deleted) { applyDeletedState(row); return; }
+  if (m.edited_at) {
+    var t = row.querySelector('.msg-text');
+    if (t) t.textContent = m.content;
+    var meta = row.querySelector('.msg-meta');
+    if (meta && !meta.querySelector('.msg-edited')) {
+      var span = document.createElement('span');
+      span.className = 'msg-edited';
+      span.textContent = 'editado';
+      meta.insertBefore(span, meta.firstChild);
+    }
+  }
+  if (m.sender_id === AC.me.id) updateSeen(row, m);
+}
+
+function acHandleLiveReaction(messageId, userId, emoji, added) {
+  if (userId === AC.me.id) return;   // el propio RPC ya actualizó la UI
+  var row = acMsgRow(messageId);
+  if (!row) return;
+  var chip = row.querySelector('.reaction-chip[data-emoji="' + emoji + '"]');
+  var current = chip ? parseInt(chip.querySelector('.rc-count').textContent, 10) : 0;
+  var count = added ? current + 1 : current - 1;
+  applyReaction(messageId, emoji, userId, added, Math.max(count, 0));
+}
+
+// ── Reacciones ──────────────────────────────────────────────────────
+function applyReaction(messageId, emoji, userId, added, count) {
+  var row = acMsgRow(messageId);
+  if (!row) return;
+  var chip = row.querySelector('.reaction-chip[data-emoji="' + emoji + '"]');
+  var mine = userId === AC.me.id;
+  if (added) {
+    if (chip) {
+      chip.querySelector('.rc-count').textContent = count;
+      chip.classList.toggle('mine', mine);
+    } else {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'reaction-chip' + (mine ? ' mine' : '');
+      btn.setAttribute('data-emoji', emoji);
+      btn.innerHTML = '<span class="rc-emoji">' + emoji + '</span><span class="rc-count">' + count + '</span>';
+      btn.onclick = function () { toggleReaction(messageId, emoji); };
+      var wrap = row.querySelector('.msg-reactions');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'msg-reactions';
+        var b = row.querySelector('.bubble');
+        if (b) b.appendChild(wrap);
+      }
+      var addBtn = wrap.querySelector('.reaction-add');
+      if (addBtn) wrap.insertBefore(btn, addBtn); else wrap.appendChild(btn);
+    }
+  } else if (chip) {
+    if (count > 0) {
+      chip.querySelector('.rc-count').textContent = count;
+      chip.classList.toggle('mine', mine);
+    } else {
+      chip.remove();
+    }
+  }
+}
+
+function toggleReaction(messageId, emoji) {
+  acToggleReaction(messageId, emoji).then(function (r) {
+    if (!r) return;
+    applyReaction(messageId, r.emoji, AC.me.id, r.added, r.count);
+  }).catch(function (e) { acToastError(e, 'No se pudo reaccionar'); });
+}
+
+function openReactionPicker(messageId, ev) {
+  if (ev) ev.stopPropagation();
+  var row = acMsgRow(messageId);
+  if (!row) return;
+  var existing = row.querySelector('.reaction-picker');
+  if (existing) { existing.remove(); return; }
+  var bar = document.createElement('div');
+  bar.className = 'reaction-picker';
+  ['👍', '❤️', '😂', '😮', '🙏'].forEach(function (e) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = e;
+    b.className = 'reaction-pick';
+    b.onclick = function () { bar.remove(); toggleReaction(messageId, e); };
+    bar.appendChild(b);
+  });
+  var bubble = row.querySelector('.bubble');
+  if (bubble) bubble.appendChild(bar);
+}
+
+// ── Responder (citar) ───────────────────────────────────────────────
+function respondTo(id, name, content) {
+  AC.replyTo = { id: id, name: name, content: content };
+  var bar = document.getElementById('replyBar');
+  if (!bar) return;
+  bar.innerHTML = '<span class="reply-bar-label">↩ ' + htmlEncode(name) + '</span>' +
+    '<span class="reply-bar-content">' + htmlEncode(content) + '</span>' +
+    '<button type="button" class="reply-bar-close" onclick="cancelReply()">✕</button>';
+  bar.classList.add('active');
+  var inp = document.getElementById('msgInput');
+  if (inp) inp.focus();
+}
+function cancelReply() {
+  AC.replyTo = null;
+  var bar = document.getElementById('replyBar');
+  if (bar) { bar.classList.remove('active'); bar.innerHTML = ''; }
+}
+
+// ── Editar / borrar ─────────────────────────────────────────────────
+function openEdit(id, content) {
+  document.getElementById('editMsgId').value = id;
+  document.getElementById('editContent').value = content;
+  openModal('editModal');
+}
+function confirmDelete(msgId) {
+  document.getElementById('deleteMsgId').value = msgId;
+  openModal('deleteModal');
+}
+function submitEdit() {
+  var mid = document.getElementById('editMsgId').value;
+  var content = document.getElementById('editContent').value.trim();
+  if (!content) return;
+  closeModal('editModal');
+  acEditMessage(mid, content).then(function (m) {
+    if (m) acHandleLiveMessage(m, 'UPDATE');
+  }).catch(function (e) { acToastError(e, 'No se pudo editar'); });
+}
+function submitDelete() {
+  var mid = document.getElementById('deleteMsgId').value;
+  closeModal('deleteModal');
+  acDeleteMessage(mid).then(function (m) {
+    if (m) acHandleLiveMessage(m, 'UPDATE');
+  }).catch(function (e) { acToastError(e, 'No se pudo eliminar'); });
+}
+
+// ── Lightbox ────────────────────────────────────────────────────────
+function openLightbox(img) {
+  document.getElementById('lightboxImg').src = img.src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  var lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('open');
+}
+
+// ── Enviar mensajes (texto / sticker / archivo) ────────────────────
+function acSendMessageContent(type, content, filePath, fileName, size, replyToId) {
+  var kind = AC.view.kind;
+  var p = kind === 'direct'
+    ? acInsertDirectMessage(AC.view.id, content, type, fileName, filePath, size, replyToId)
+    : acInsertGroupMessage(AC.view.id, content, type, fileName, filePath, size, replyToId);
+  return p.then(function (m) {
+    if (m) { addMessageToArea(m); scrollToBottom(); }
+    return m;
+  }).catch(function (e) {
+    acToastError(e, 'No se pudo enviar el mensaje');
+    return null;
+  });
+}
+
+function acSendText() {
+  var input = document.getElementById('msgInput');
+  if (!input) return;
+  var content = input.value.trim();
+  if (!content) return;
+  input.value = '';
+  var rid = AC.replyTo ? AC.replyTo.id : null;
+  cancelReply();
+  acSendMessageContent('text', content, null, null, null, rid);
+}
+
+function toggleAttach() {
+  var panel = document.getElementById('attachPanel');
+  if (panel) panel.classList.toggle('open');
+}
+
+function acPickAttach(type, input) {
+  var file = input && input.files && input.files[0];
+  if (file) acSendAttach(type, file);
+  if (input) input.value = '';
+}
+
+function acSendSticker(path) {
+  acSendMessageContent('sticker', '', path, 'sticker.png', null, AC.replyTo ? AC.replyTo.id : null);
+}
+
+function acSendAttach(type, file) {
+  var path = AC.me.id + '/' + acRandomId() + '.' + acExt(file.name);
+  acUpload('messages', path, file)
+    .then(function (url) { return acSendMessageContent(type, '', url, file.name, file.size, null); })
+    .catch(function (e) { acToastError(e, 'No se pudo subir el archivo'); });
+}
+
+// ── Búsqueda ────────────────────────────────────────────────────────
+var acSearchTimer = null;
+function toggleSearch() {
+  var panel = document.getElementById('searchPanel');
+  if (!panel) return;
+  var open = panel.hidden;
+  panel.hidden = !open;
+  if (open) {
+    document.getElementById('searchInput').value = '';
+    renderSearchResults([]);
+    document.getElementById('searchInput').focus();
+  }
+}
+function closeSearch() {
+  var panel = document.getElementById('searchPanel');
+  if (panel) panel.hidden = true;
+  var inp = document.getElementById('searchInput');
+  if (inp) inp.value = '';
+}
+function highlightText(text, q) {
+  var needle = String(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var re = new RegExp('(' + needle + ')', 'ig');
+  return String(text).replace(re, '<mark class="search-hit">$1</mark>');
+}
+function renderSearchResults(results) {
+  var box = document.getElementById('searchResults');
+  if (!box) return;
+  var inp = document.getElementById('searchInput');
+  var q = inp ? inp.value.trim() : '';
+  var count = document.getElementById('searchCount');
+  if (count) {
+    count.hidden = results.length === 0;
+    count.textContent = results.length + (results.length === 1 ? ' resultado' : ' resultados');
+  }
+  if (!results.length) {
+    box.innerHTML = q
+      ? '<div class="search-empty">Sin resultados para «' + htmlEncode(q) + '»</div>'
+      : '<div class="search-empty">Escribí para buscar…</div>';
+    return;
+  }
+  box.innerHTML = results.map(function (m) {
+    var content = htmlEncode(m.content || '');
+    if (q) content = highlightText(content, q);
+    return '<div class="search-result" onclick="goToMessage(\'' + m.id + '\')">' +
+      '<span class="search-result-avatar" style="background:' + htmlEncode(m.sender_color || '#6C63FF') + '">' + htmlEncode((m.sender_name || '?').charAt(0).toUpperCase()) + '</span>' +
+      '<span class="search-result-body">' +
+      '<span class="search-result-name">' + htmlEncode(m.sender_name || '') + '</span>' +
+      '<span class="search-result-text">' + content + '</span>' +
+      '</span>' +
+      '<span class="search-result-time">' + formatTime(m.created_at) + '</span></div>';
+  }).join('');
+}
+function goToMessage(id) {
+  closeSearch();
+  var row = acMsgRow(id);
+  if (!row) return;
+  row.scrollIntoView({ block: 'center' });
+  row.classList.add('flash');
+  setTimeout(function () { row.classList.remove('flash'); }, 1600);
+}
+function acBindSearch(fetchFn) {
+  document.addEventListener('DOMContentLoaded', function () {
+    var inp = document.getElementById('searchInput');
+    if (!inp) return;
+    inp.addEventListener('input', function () {
+      clearTimeout(acSearchTimer);
+      var q = inp.value.trim();
+      if (!q) { renderSearchResults([]); return; }
+      acSearchTimer = setTimeout(function () {
+        fetchFn(q).then(function (r) { renderSearchResults(r || []); });
+      }, 300);
+    });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSearch(); });
+  });
+}

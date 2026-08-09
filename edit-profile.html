@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editar perfil — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <div class="profile-edit-main">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú">☰</button>
+      <a href="profile.html" class="btn btn-ghost" style="padding:7px 12px;font-size:.84rem">← Volver</a>
+      <span style="font-weight:700;font-size:1rem">Editar perfil</span>
+    </div>
+
+    <div class="profile-edit-card">
+      <div class="alert-error" id="editError" hidden></div>
+
+      <div class="banner-edit-area" id="bannerPreview" onclick="document.getElementById('bannerFileInput').click()">
+        <div class="banner-edit-overlay">🖼 Cambiar banner</div>
+        <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="editBannerChanged(this)"/>
+      </div>
+
+      <div class="avatar-edit-row">
+        <span class="avatar avatar-lg" id="avatarPreview"></span>
+        <label class="avatar-change-label">📷 Cambiar foto
+          <input type="file" accept="image/*" onchange="editAvatarChanged(this)"/>
+        </label>
+      </div>
+
+      <form id="editForm">
+        <div class="field">
+          <label for="displayName">Nombre a mostrar</label>
+          <input type="text" id="displayName" maxlength="40" required/>
+        </div>
+        <div class="field">
+          <label for="status">Estado</label>
+          <input type="text" id="status" maxlength="100" placeholder="¿Qué estás haciendo?"/>
+        </div>
+        <div class="field">
+          <label for="youtubeSongUrl">🎵 Canción favorita (link de YouTube)</label>
+          <input type="url" id="youtubeSongUrl" placeholder="https://www.youtube.com/watch?v=..."/>
+        </div>
+        <div class="form-actions">
+          <a href="profile.html" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/edit-profile.js"></script>
+</body>
+</html>

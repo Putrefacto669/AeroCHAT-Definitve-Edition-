@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ingresar — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Intro (igual que la versión original) -->
+<div id="introOverlay" class="intro-overlay">
+  <video id="introBgVideo" class="intro-bg-video" autoplay muted playsinline webkit-playsinline disableRemotePlayback preload="auto" tabindex="-1" aria-hidden="true"></video>
+  <video id="introVideo" class="intro-fg-video" autoplay muted playsinline webkit-playsinline disableRemotePlayback preload="auto" aria-label="Intro de AeroChat"></video>
+  <div class="intro-vignette"></div>
+  <button type="button" id="introSound" class="intro-sound" title="Activar sonido">
+    <svg id="introSoundOff" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+    <svg id="introSoundOn" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+  </button>
+  <button type="button" id="introSkip" class="intro-skip">Saltar intro</button>
+</div>
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon">✈</div>
+      <h1>AeroChat</h1>
+      <p>Mensajería privada segura</p>
+    </div>
+
+    <div class="alert-error" id="authError" hidden></div>
+
+    <!-- Login -->
+    <form id="loginForm" autocomplete="on">
+      <div class="field">
+        <label for="loginUsername">Usuario</label>
+        <input type="text" id="loginUsername" placeholder="nombre de usuario" autocomplete="username" required/>
+      </div>
+      <div class="field">
+        <label for="loginPassword">Contraseña</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required/>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="loginBtn" style="margin-top:4px">Entrar</button>
+    </form>
+
+    <p class="login-note">
+      ¿No tenés cuenta? <a href="#" id="toRegister" style="color:var(--accent);text-decoration:none;font-weight:600">Registrate gratis</a>
+    </p>
+
+    <!-- Registro -->
+    <form id="registerForm" hidden autocomplete="on">
+      <div class="field">
+        <label for="regUsername">Usuario</label>
+        <input type="text" id="regUsername" placeholder="nombre de usuario (mín. 3 caracteres)" autocomplete="username" required/>
+      </div>
+      <div class="field">
+        <label for="regDisplayName">Nombre a mostrar</label>
+        <input type="text" id="regDisplayName" placeholder="Cómo te van a ver los demás" required/>
+      </div>
+      <div class="field">
+        <label for="regPassword">Contraseña</label>
+        <input type="password" id="regPassword" placeholder="Mínimo 4 caracteres" autocomplete="new-password" required/>
+      </div>
+      <div class="field">
+        <label for="regConfirm">Confirmar contraseña</label>
+        <input type="password" id="regConfirm" placeholder="Repetí la contraseña" autocomplete="new-password" required/>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="registerBtn" style="margin-top:4px">Crear cuenta</button>
+    </form>
+
+    <p class="login-note" id="toLoginWrap" hidden>
+      ¿Ya tenés cuenta? <a href="#" id="toLogin" style="color:var(--accent);text-decoration:none;font-weight:600">Iniciá sesión</a>
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
