@@ -18,7 +18,15 @@ function toggleStickers() {
   var panel = document.getElementById('stickerPanel');
   if (!panel) return;
   panel.hidden = !stickerOpen;
-  if (stickerOpen && !stickerData) loadStickers();
+  var stBtn = document.querySelector('.icon-btn-sticker');
+  if (stBtn) stBtn.classList.toggle('active', stickerOpen);
+  if (stickerOpen) {
+    var gifPanel = document.getElementById('gifPanel');
+    if (gifPanel) gifPanel.hidden = true;
+    var gifBtn = document.getElementById('gifBtn');
+    if (gifBtn) gifBtn.classList.remove('active');
+    if (!stickerData) loadStickers();
+  }
 }
 
 function loadStickers() {

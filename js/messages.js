@@ -70,8 +70,10 @@ function buildMessageRow(msg) {
 
   var replyHtml = '';
   if (msg.reply_to_id) {
-    replyHtml = '<div class="msg-reply"><span class="msg-reply-sender">' + htmlEncode(msg.reply_to_sender || '') + '</span>' +
-      '<span class="msg-reply-content">' + htmlEncode(msg.reply_to_content || '') + '</span></div>';
+    var qt = acQuoteInfo(msg.reply_to_id, msg.reply_to_content);
+    replyHtml = '<div class="msg-reply" onclick="scrollToMessage(\'' + msg.reply_to_id + '\')">' +
+      '<span class="msg-reply-sender">' + htmlEncode(msg.reply_to_sender || '') + '</span>' +
+      '<span class="msg-reply-content">' + qt.icon + htmlEncode(qt.content) + '</span></div>';
   }
 
   var type = normalizeType(msg.type);
@@ -114,7 +116,7 @@ function buildMessageRow(msg) {
   if (!msg.is_deleted) {
     var preview = type === 0 ? String(msg.content || '').slice(0, 40) : '[' + typeName(type) + ']';
     actionsHtml = '<div class="msg-actions">' +
-      '<button class="action-btn" title="Responder" onclick="respondTo(\'' + msg.id + '\',\'' + jsEncode(msg.sender_name || '') + '\',\'' + jsEncode(preview) + '\')">' + acIcon('reply', 13) + '</button>';
+      '<button class="action-btn action-reply" title="Responder" onclick="respondTo(\'' + msg.id + '\',\'' + jsEncode(msg.sender_name || '') + '\',\'' + jsEncode(preview) + '\')">' + acIcon('reply', 13) + '</button>';
     if (isMine) {
       var editBtn = type === 0 ? '<button class="action-btn" onclick="openEdit(\'' + msg.id + '\',\'' + jsEncode(msg.content) + '\')">' + acIcon('edit', 13) + '</button>' : '';
       actionsHtml += editBtn + '<button class="action-btn del" onclick="confirmDelete(\'' + msg.id + '\')">' + acIcon('trash', 13) + '</button>';
@@ -269,13 +271,36 @@ function openReactionPicker(messageId, ev) {
 }
 
 // ── Responder (citar) ───────────────────────────────────────────────
+function acQuoteInfo(id, fallbackContent) {
+  var icon = '', label = '';
+  var row = acMsgRow(id);
+  var t = 0;
+  if (row) {
+    if (row.querySelector('.msg-sticker')) t = 5;
+    else if (row.querySelector('.msg-image')) t = 1;
+    else if (row.querySelector('.msg-audio')) t = 2;
+    else if (row.querySelector('.msg-video')) t = 4;
+    else if (row.querySelector('.msg-doc')) t = 3;
+  }
+  if (t) {
+    icon = acIcon(t === 5 ? 'star-fill' : t === 1 ? 'image' : t === 2 ? 'music' : t === 4 ? 'film' : 'file', 13);
+    label = '[' + typeName(t) + ']';
+  }
+  var content = (fallbackContent && String(fallbackContent).trim()) ? fallbackContent : label;
+  return { icon: icon, content: content };
+}
+
 function respondTo(id, name, content) {
   AC.replyTo = { id: id, name: name, content: content };
   var bar = document.getElementById('replyBar');
   if (!bar) return;
-  bar.innerHTML = '<span class="reply-bar-label">' + acIcon('reply', 13) + ' ' + htmlEncode(name) + '</span>' +
-    '<span class="reply-bar-content">' + htmlEncode(content) + '</span>' +
-    '<button type="button" class="reply-bar-close" onclick="cancelReply()">' + acIcon('close', 13) + '</button>';
+  var q = acQuoteInfo(id, content);
+  bar.innerHTML =
+    '<span class="reply-bar-main" onclick="scrollToReply()">' +
+      '<span class="reply-bar-label">' + acIcon('reply', 13) + ' Respondiendo a ' + htmlEncode(name) + '</span>' +
+      '<span class="reply-bar-content">' + q.icon + ' ' + htmlEncode(q.content) + '</span>' +
+    '</span>' +
+    '<button type="button" class="reply-bar-close" title="Cancelar" onclick="event.stopPropagation(); cancelReply()">' + acIcon('close', 13) + '</button>';
   bar.classList.add('active');
   var inp = document.getElementById('msgInput');
   if (inp) inp.focus();
@@ -284,6 +309,31 @@ function cancelReply() {
   AC.replyTo = null;
   var bar = document.getElementById('replyBar');
   if (bar) { bar.classList.remove('active'); bar.innerHTML = ''; }
+}
+function scrollToMessage(id) {
+  var row = acMsgRow(id);
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.remove('flash');
+  void row.offsetWidth;
+  row.classList.add('flash');
+}
+function scrollToReply() {
+  if (AC.replyTo) scrollToMessage(AC.replyTo.id);
+}
+function acBindMsgTapActions() {
+  if (!window.matchMedia || !matchMedia('(hover: none)').matches) return;
+  document.addEventListener('click', function (e) {
+    var row = e.target && e.target.closest ? e.target.closest('.msg-row') : null;
+    var open = document.querySelectorAll('.msg-row.show-actions');
+    for (var i = 0; i < open.length; i++) {
+      if (open[i] !== row) open[i].classList.remove('show-actions');
+    }
+    if (!row) return;
+    if (e.target.closest('a, button, audio, video, img, .msg-actions')) return;
+    if (row.classList.contains('show-actions')) row.classList.remove('show-actions');
+    else row.classList.add('show-actions');
+  });
 }
 
 // ── Editar / borrar ─────────────────────────────────────────────────
@@ -484,6 +534,7 @@ function acInitComposer() {
   input.dataset.acBound = '1';
   input.addEventListener('input', acUpdateComposer);
   acUpdateComposer();
+  acBindMsgTapActions();
 }
 
 // ── Búsqueda ────────────────────────────────────────────────────────
