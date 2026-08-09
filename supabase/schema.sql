@@ -408,7 +408,9 @@ $$;
 
 create or replace function public.cancel_friend_request(p_to uuid) returns boolean
 language sql security definer set search_path = public, pg_temp as $$
-  delete from public.friend_requests where from_user = auth.uid() and to_user = p_to
+  with del as (
+    delete from public.friend_requests where from_user = auth.uid() and to_user = p_to
+  ) select true;
 $$;
 
 create or replace function public.remove_friend(p_friend uuid) returns boolean
