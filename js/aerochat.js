@@ -113,6 +113,58 @@ function acRandomId() {
   });
 }
 
+// ── Iconos SVG ──────────────────────────────────────────────────────
+// Todos los iconos de la app se generan con acIcon(name, size, cls, opts)
+// y se pintan inline (stroke actual, round caps), así el color se hereda
+// del texto/CSS (currentColor). Compatible con los estilos .icon-btn y .btn.
+var acIconMap = {
+  menu: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  close: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  plane: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  'phone-down': '<polyline points="17 1 22 6 17 11"/><line x1="22" y1="6" x2="8" y2="6"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  video: '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  'camera-off': '<line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l3-3h6l3 3h3a2 2 0 0 1 2 2v11a2 2 0 0 1-1.71 1.98"/>',
+  mic: '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>',
+  'mic-off': '<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  film: '<rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  edit: '<path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  reply: '<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+  'message-circle': '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  'check-all': '<polyline points="1 12 5 16 10 11"/><polyline points="13 11 17 15 22 10"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  sun: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+  moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  'arrow-left': '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  'arrow-right': '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  'star-fill': '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  'at': '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>',
+  paperclip: '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  status: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/>'
+};
+
+function acIcon(name, size, cls, filled) {
+  var inner = acIconMap[name] || '';
+  var fill = filled ? ' fill="currentColor" stroke="currentColor"' : '';
+  size = size || 18;
+  return '<svg class="ac-icon' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"' + fill + ' stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+}
+window.acIcon = acIcon;
+
 // ── Avatares (img o inicial) ────────────────────────────────────────
 function acAvatarHtml(u, cls) {
   cls = cls || 'avatar avatar-md';
@@ -182,10 +234,10 @@ function acShellHtml() {
   '<aside class="sidebar" id="sidebar">' +
     '<div class="sidebar-header">' +
       '<div class="sidebar-top-row">' +
-        '<div class="sidebar-brand"><div class="sidebar-brand-icon">✈</div> AeroChat</div>' +
+        '<div class="sidebar-brand">' + acIcon('plane', 15) + ' AeroChat</div>' +
         '<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">' +
-          '<div class="theme-toggle-pill theme-pill-dark active">🌙</div>' +
-          '<div class="theme-toggle-pill theme-pill-light">☀️</div>' +
+          '<div class="theme-toggle-pill theme-pill-dark active">' + acIcon('moon', 13) + '</div>' +
+          '<div class="theme-toggle-pill theme-pill-light">' + acIcon('sun', 13) + '</div>' +
         '</button>' +
       '</div>' +
       '<a href="profile.html?u={meId}" class="sidebar-me" id="sidebarMe">{meAvatar}' +
@@ -202,12 +254,12 @@ function acShellHtml() {
       '<span class="unread-badge" id="totalUnread" hidden></span></div>' +
     '<div class="user-list sidebar-list" id="friendList"></div>' +
     '<div class="sidebar-section-label">Grupos' +
-      '<button class="mini-btn mini-add mini-add-group" title="Nuevo grupo" onclick="openNewGroup()">＋</button></div>' +
+      '<button class="mini-btn mini-add mini-add-group" title="Nuevo grupo" onclick="openNewGroup()">' + acIcon('plus', 13) + '</button></div>' +
     '<div class="user-list sidebar-list" id="groupList"></div>' +
     '<div class="sidebar-section-label">Descubrir</div>' +
     '<input type="search" class="sidebar-search" id="discoverSearch" placeholder="Buscar usuarios…"/>' +
     '<div class="user-list sidebar-list" id="discoverList"></div>' +
-    '<div class="sidebar-footer"><a href="javascript:logout()" class="btn-logout"><span>↩</span> Cerrar sesión</a></div>' +
+    '<div class="sidebar-footer"><a href="javascript:logout()" class="btn-logout">' + acIcon('logout', 16) + '<span>Cerrar sesión</span></a></div>' +
   '</aside>' +
   '<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>' +
   '<div class="modal-overlay" id="newGroupModal">' +
@@ -227,7 +279,7 @@ function acShellHtml() {
       '<h3>Nuevo estado</h3>' +
       '<div class="field"><label for="statusContent">Texto</label>' +
       '<textarea id="statusContent" class="edit-textarea" rows="3" placeholder="¿Qué estás haciendo?"></textarea></div>' +
-      '<div class="field"><label class="avatar-change-label">🖼 Agregar foto' +
+      '<div class="field"><label class="avatar-change-label">' + acIcon('image', 15) + ' Agregar foto' +
       '<input type="file" id="statusImage" accept="image/*"/></label></div>' +
       '<div class="modal-actions">' +
         '<button type="button" class="btn btn-secondary" onclick="closeModal(\'newStatusModal\')">Cancelar</button>' +
@@ -246,12 +298,12 @@ function acShellHtml() {
         '<div class="call-participants" id="callParticipants"></div>' +
       '</div>' +
       '<div class="call-actions">' +
-        '<button class="call-btn call-accept" onclick="acceptIncoming()" title="Aceptar">📞</button>' +
-        '<button class="call-btn call-reject" onclick="declineIncoming()" title="Rechazar">✕</button>' +
-        '<button class="call-btn call-cam" id="callCam" onclick="toggleCam()" title="Cámara">🎥</button>' +
-        '<button class="call-btn call-mute" id="callMute" onclick="toggleMute()" title="Silenciar">🎙</button>' +
-        '<button class="call-btn call-invite" id="callInvite" onclick="openCallInvite()" title="Invitar">👥</button>' +
-        '<button class="call-btn call-hangup" onclick="hangupCall()" title="Colgar">📵</button>' +
+        '<button class="call-btn call-accept" onclick="acceptIncoming()" title="Aceptar">' + acIcon('phone', 24) + '</button>' +
+        '<button class="call-btn call-reject" onclick="declineIncoming()" title="Rechazar">' + acIcon('close', 24) + '</button>' +
+        '<button class="call-btn call-cam" id="callCam" onclick="toggleCam()" title="Cámara">' + acIcon('camera', 22) + '</button>' +
+        '<button class="call-btn call-mute" id="callMute" onclick="toggleMute()" title="Silenciar">' + acIcon('mic', 22) + '</button>' +
+        '<button class="call-btn call-invite" id="callInvite" onclick="openCallInvite()" title="Invitar">' + acIcon('users', 22) + '</button>' +
+        '<button class="call-btn call-hangup" onclick="hangupCall()" title="Colgar">' + acIcon('phone-down', 22) + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="call-invite-modal" id="callInviteModal" hidden>' +
@@ -311,8 +363,8 @@ function acRenderSidebar() {
         '<div class="user-item-info"><span class="user-item-name">' + escapeHtml(u.display_name) + '</span>' +
         '<span class="user-item-sub">Quiere ser tu amigo</span></div>' +
         '<div class="req-actions">' +
-        '<button class="mini-btn mini-accept" title="Aceptar" onclick="acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">✓</button>' +
-        '<button class="mini-btn mini-decline" title="Rechazar" onclick="declineRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">✕</button>' +
+        '<button class="mini-btn mini-accept" title="Aceptar" onclick="acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">' + acIcon('check', 13) + '</button>' +
+        '<button class="mini-btn mini-decline" title="Rechazar" onclick="declineRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">' + acIcon('close', 13) + '</button>' +
         '</div></div>';
     }).join('') ||
       '<div class="sidebar-empty">Todavía no tenés amigos.<br/>Agregá contactos con el botón ＋.</div>';
@@ -383,15 +435,15 @@ function acRenderSidebar() {
 // Acción según el estado de amistad en Descubrir / búsqueda.
 function acDiscoverAction(u) {
   if (u.friend_state === 'outgoing') {
-    return '<span class="mini-btn pending" title="Solicitud enviada" onclick="event.preventDefault()">⏳</span>';
+    return '<span class="mini-btn pending" title="Solicitud enviada" onclick="event.preventDefault()">' + acIcon('clock', 13) + '</span>';
   }
   if (u.friend_state === 'incoming') {
-    return '<button class="mini-btn mini-accept" title="Aceptar solicitud" onclick="event.preventDefault();acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">✓</button>';
+    return '<button class="mini-btn mini-accept" title="Aceptar solicitud" onclick="event.preventDefault();acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">' + acIcon('check', 13) + '</button>';
   }
   if (u.friend_state === 'friends') {
-    return '<span class="mini-btn pending" title="Ya son amigos" onclick="event.preventDefault()">✓</span>';
+    return '<span class="mini-btn pending" title="Ya son amigos" onclick="event.preventDefault()">' + acIcon('check', 13) + '</span>';
   }
-  return '<span class="mini-btn mini-add" title="Agregar amigo" onclick="event.preventDefault();sendFriendRequest(\'' + u.id + '\')">＋</span>';
+  return '<span class="mini-btn mini-add" title="Agregar amigo" onclick="event.preventDefault();sendFriendRequest(\'' + u.id + '\')">' + acIcon('plus', 13) + '</span>';
 }
 
 // ── Acciones de amistad ─────────────────────────────────────────────
@@ -450,16 +502,16 @@ function renderProfileFriendActions(state) {
   var reqId = wrap.getAttribute('data-requestid') || '';
   var html = '';
   if (state === 'friends') {
-    html = '<a href="conversation.html?u=' + id + '" class="btn btn-primary">💬 Mensaje</a>' +
+    html = '<a href="conversation.html?u=' + id + '" class="btn btn-primary">' + acIcon('message-circle', 15) + ' Mensaje</a>' +
       '<button type="button" class="btn btn-secondary" onclick="removeFriend(\'' + id + '\')">Eliminar amigo</button>';
   } else if (state === 'incoming') {
-    html = '<button type="button" class="btn btn-primary" onclick="acceptRequest(\'' + id + '\',\'' + reqId + '\',this)">✓ Aceptar solicitud</button>' +
+    html = '<button type="button" class="btn btn-primary" onclick="acceptRequest(\'' + id + '\',\'' + reqId + '\',this)">' + acIcon('check', 15) + ' Aceptar solicitud</button>' +
       '<button type="button" class="btn btn-ghost" onclick="declineRequest(\'' + id + '\',\'' + reqId + '\',this)">Rechazar</button>';
   } else if (state === 'outgoing') {
     html = '<button type="button" class="btn btn-secondary" disabled>Solicitud enviada</button>' +
       '<button type="button" class="btn btn-ghost" onclick="cancelRequest(\'' + id + '\')">Cancelar</button>';
   } else {
-    html = '<button type="button" class="btn btn-primary" onclick="sendFriendRequest(\'' + id + '\')">＋ Agregar amigo</button>';
+    html = '<button type="button" class="btn btn-primary" onclick="sendFriendRequest(\'' + id + '\')">' + acIcon('plus', 15) + ' Agregar amigo</button>';
   }
   wrap.innerHTML = html;
 }
@@ -517,12 +569,12 @@ function loadStatusStrip() {
     var html = '<a class="status-strip-item" href="status.html" title="Mi estado">' +
       '<span class="status-ring' + (myStatuses.length ? ' has-status' : '') + '">' +
       (me ? acAvatarHtml(me, 'avatar avatar-md') : '') +
-      '<span class="status-strip-add">＋</span></span>' +
+      '<span class="status-strip-add">' + acIcon('plus', 10) + '</span></span>' +
       '<span class="status-strip-name">Mi estado</span></a>';
     Object.keys(groups).forEach(function (uid) {
       var g = groups[uid];
       var last = g.items[g.items.length - 1];
-      var preview = last && last.type === 'image' ? '📷 foto' : (last ? last.content : '');
+      var preview = last && last.type === 'image' ? 'Foto' : (last ? last.content : '');
       html += '<a class="status-strip-item" href="status.html?u=' + uid + '" title="' + escapeHtml(g.userName) + ': ' + escapeHtml(preview) + '">' +
         '<span class="status-ring has-status">' +
         (g.userAvatar ? '<img src="' + escapeHtml(g.userAvatar) + '" class="avatar avatar-md" alt=""/>'

@@ -464,9 +464,9 @@ function cleanupCall() {
   window.acCall.incoming = null;
   window.acCall.startTs = 0;
   var muteBtn = document.getElementById('callMute');
-  if (muteBtn) { muteBtn.classList.remove('muted'); muteBtn.textContent = '🎙'; }
+  if (muteBtn) { muteBtn.classList.remove('muted'); muteBtn.innerHTML = acIcon('mic', 22); }
   var camBtn = document.getElementById('callCam');
-  if (camBtn) { camBtn.classList.remove('off'); camBtn.textContent = '🎥'; }
+  if (camBtn) { camBtn.classList.remove('off'); camBtn.innerHTML = acIcon('camera', 22); }
   setCallTimer(false);
   clearCallVideos();
   clearParticipants();
@@ -510,7 +510,7 @@ function toggleMute() {
   var btn = document.getElementById('callMute');
   if (btn) {
     btn.classList.toggle('muted', window.acCall.muted);
-    btn.textContent = window.acCall.muted ? '🔇' : '🎙';
+    btn.innerHTML = window.acCall.muted ? acIcon('mic-off', 22) : acIcon('mic', 22);
   }
 }
 
@@ -521,7 +521,7 @@ function toggleCam() {
   var btn = document.getElementById('callCam');
   if (btn) {
     btn.classList.toggle('off', window.acCall.camOff);
-    btn.textContent = window.acCall.camOff ? '🚫' : '🎥';
+    btn.innerHTML = window.acCall.camOff ? acIcon('camera-off', 22) : acIcon('camera', 22);
   }
 }
 

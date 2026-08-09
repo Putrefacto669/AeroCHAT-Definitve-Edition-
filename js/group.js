@@ -69,7 +69,7 @@ function renderMemberAdminList() {
     var canRemove = isOwner && !isOwnerRow && m.id !== AC.authUser.id;
     return '<div class="group-member-admin">' +
       '<span class="group-member-admin-name">' + escapeHtml(m.display_name) + (isOwnerRow ? ' (dueño)' : '') + '</span>' +
-      (canRemove ? '<button type="button" class="mini-btn mini-decline" title="Quitar del grupo" onclick="removeGroupMember(\'' + m.id + '\')">✕</button>' : '') +
+      (canRemove ? '<button type="button" class="mini-btn mini-decline" title="Quitar del grupo" onclick="removeGroupMember(\'' + m.id + '\')">' + acIcon('close', 13) + '</button>' : '') +
       '</div>';
   }).join('') || '<div class="sidebar-empty">Sin miembros</div>';
 }

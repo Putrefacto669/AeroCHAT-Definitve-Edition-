@@ -16,7 +16,7 @@
 
   <div class="profile-main">
     <div class="profile-header-bar">
-      <button class="hamburger" onclick="openSidebar()" aria-label="Menú">☰</button>
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       <span style="font-size:.9rem;color:var(--text-2)">Perfil</span>
     </div>
 
@@ -24,7 +24,7 @@
       <div class="profile-banner" id="bannerDiv">
         <div class="profile-banner-overlay"></div>
         <div id="bannerEditWrap" hidden>
-          <button type="button" class="banner-edit-btn" onclick="document.getElementById('bannerFileInput').click()">🖼 Cambiar banner</button>
+          <button type="button" class="banner-edit-btn" onclick="document.getElementById('bannerFileInput').click()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Cambiar banner</button>
           <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="profileBannerChanged(this)"/>
         </div>
       </div>
@@ -33,7 +33,7 @@
         <div class="profile-avatar-wrap">
           <span id="profileAvatar" class="avatar avatar-lg"></span>
           <div id="avatarEditWrap" hidden>
-            <button type="button" class="avatar-edit-btn" title="Cambiar foto" onclick="document.getElementById('avatarFileInput').click()">📷</button>
+            <button type="button" class="avatar-edit-btn" title="Cambiar foto" onclick="document.getElementById('avatarFileInput').click()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
             <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="profileAvatarChanged(this)"/>
           </div>
         </div>
@@ -54,7 +54,7 @@
       </div>
 
       <div class="profile-section" id="youtubeSection" hidden>
-        <div class="profile-section-title">🎵 Canción favorita</div>
+        <div class="profile-section-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Canción favorita</div>
         <div class="yt-wrap">
           <iframe id="youtubeFrame" title="Canción favorita" frameborder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
