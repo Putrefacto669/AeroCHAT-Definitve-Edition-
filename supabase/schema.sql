@@ -945,13 +945,17 @@ $$;
 --  Habilitamos la publicación para que Supabase Realtime entregue
 --  los cambios. RLS filtra qué filas ve cada suscriptor.
 -- ═══════════════════════════════════════════════════════════════════
-alter publication supabase_realtime add table public.messages;
-alter publication supabase_realtime add table public.reactions;
-alter publication supabase_realtime add table public.friend_requests;
-alter publication supabase_realtime add table public.friendships;
-alter publication supabase_realtime add table public.groups;
-alter publication supabase_realtime add table public.statuses;
-alter publication supabase_realtime add table public.profiles;
+do $$
+declare t text;
+begin
+  foreach t in array array['messages','reactions','friend_requests','friendships','groups','statuses','profiles'] loop
+    if not exists (select 1 from pg_publication_tables
+                   where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end;
+$$;
 
 -- ═══════════════════════════════════════════════════════════════════
 --  6. STORAGE (buckets + políticas)
