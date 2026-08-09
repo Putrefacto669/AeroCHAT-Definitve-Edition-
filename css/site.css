@@ -470,16 +470,18 @@ img.avatar { object-fit: cover; }
 /* Hover actions */
 .msg-actions {
   position: absolute; top: -6px;
-  display: none; gap: 3px; align-items: center;
+  display: none; gap: 4px; align-items: center;
+  z-index: 3;
 }
-.msg-row.mine .msg-actions { left: -5px; right: auto; flex-direction: row-reverse; transform: translateX(-100%); }
-.msg-row.theirs .msg-actions { right: -5px; transform: translateX(100%); }
-.bubble:hover .msg-actions { display: flex; }
+.msg-row.mine .msg-actions { left: 8px; }
+.msg-row.theirs .msg-actions { right: 8px; }
+.msg-row:hover .msg-actions,
+.msg-actions:hover { display: flex; }
 .msg-row.show-actions .msg-actions { display: flex; }
 
 .action-btn {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 50%; padding: 0; width: 28px; height: 28px;
+  border-radius: 50%; padding: 0; width: 30px; height: 30px;
   cursor: pointer; font-size: .8rem; color: var(--text-2);
   display: flex; align-items: center; justify-content: center;
   transition: all var(--transition); box-shadow: var(--shadow-sm);
@@ -1037,6 +1039,8 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .search-panel-head input, .sticker-import input, textarea, .edit-textarea, .modal input { font-size: 16px; }
   .icon-btn { width: 34px; height: 34px; font-size: .9rem; }
   .send-form { gap: 6px; }
+  .action-btn { width: 34px; height: 34px; }
+  .msg-actions { gap: 6px; }
 
   .sticker-panel:not([hidden]) { max-height: 320px; }
   .sticker-panel-body { max-height: 200px; }
