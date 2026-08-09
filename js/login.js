@@ -5,7 +5,7 @@
 //    · Login:    resolve_auth_email(usuario) → signInWithPassword(email)
 //    · Registro: username_available → signUp(email sintético) →
 //                create_profile(...) (RPC, crea la fila en profiles)
-//    · Muestra la intro de video (igual que el original) y el tema.
+//    · Aplica el tema persistido.
 //  ═══════════════════════════════════════════════════════════════════
 
 // Tema persistido (antes de pintar)
@@ -130,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // Ya logueado → directo al chat
   acSupabase.auth.getSession().then(function (r) {
     if (r.data && r.data.session) { location.replace('chat.html'); return; }
-    initIntro();
   });
 
   var loginBtn = document.getElementById('loginBtn');
@@ -142,69 +141,3 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('toRegister').addEventListener('click', function (e) { e.preventDefault(); toggleForms(true); });
   document.getElementById('toLogin').addEventListener('click', function (e) { e.preventDefault(); toggleForms(false); });
 });
-
-// ── Intro (video) ───────────────────────────────────────────────────
-function initIntro() {
-  var ov = document.getElementById('introOverlay');
-  if (!ov) return;
-  var v = document.getElementById('introVideo');
-  var bg = document.getElementById('introBgVideo');
-  var isPortrait = (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) || (window.innerHeight > window.innerWidth);
-  var src = isPortrait ? 'media/intro-vertical.mp4' : 'media/intro.mp4';
-  v.src = src;
-  if (bg) bg.src = src;
-  var done = false;
-  var timer = null;
-
-  function dismiss() {
-    if (done) return;
-    done = true;
-    if (timer) clearTimeout(timer);
-    ov.classList.add('out');
-    setTimeout(function () { ov.remove(); }, 650);
-  }
-  v.addEventListener('error', dismiss);
-  v.addEventListener('ended', dismiss);
-  v.addEventListener('loadedmetadata', function () {
-    var d = (v.duration || 5) * 1000;
-    timer = setTimeout(dismiss, d + 400);
-  });
-  v.muted = true;
-  if (bg) bg.muted = true;
-  function start(vid) {
-    var p = vid.play();
-    if (p && p.catch) p.catch(function () {});
-  }
-  start(v);
-  if (bg) start(bg);
-  v.addEventListener('loadeddata', function () { start(v); });
-  v.addEventListener('canplay', function () { start(v); });
-  document.getElementById('introSkip').addEventListener('click', dismiss);
-  ov.addEventListener('click', function (e) { if (e.target === ov) dismiss(); });
-
-  var sound = document.getElementById('introSound');
-  var offIco = document.getElementById('introSoundOff');
-  var onIco = document.getElementById('introSoundOn');
-  function setSound(on) {
-    v.muted = !on;
-    if (offIco) offIco.hidden = on;
-    if (onIco) onIco.hidden = !on;
-  }
-  if (sound) sound.addEventListener('click', function () {
-    setSound(v.muted);
-    if (!v.muted) start(v);
-  });
-  var gestureDone = false;
-  function enableSound(e) {
-    if (gestureDone) return;
-    var t = e && e.target;
-    if (t && t.closest && t.closest('.intro-sound')) return;
-    gestureDone = true;
-    setSound(true);
-    start(v);
-  }
-  ['pointerdown', 'keydown', 'touchstart'].forEach(function (evt) {
-    document.addEventListener(evt, enableSound, { once: true, passive: true });
-  });
-  if (!v.readyState) setTimeout(dismiss, 9000);
-}

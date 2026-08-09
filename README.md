@@ -31,7 +31,7 @@ importar stickers de sticker.ly.
 
 ```
 AeroCHhat eb/
-├── index.html               → login / registro + intro animada
+├── index.html               → login / registro
 ├── chat.html                → lista de conversaciones (página principal)
 ├── conversation.html        → chat directo (DM) con {?u=ID}
 ├── group.html               → chat de grupo con {?id=ID}
@@ -55,8 +55,6 @@ AeroCHhat eb/
 │   ├── profile.js           → lógica de profile.html
 │   └── edit-profile.js      → lógica de edit-profile.html
 ├── media/
-│   ├── intro.mp4            → intro horizontal
-│   └── intro-vertical.mp4   → intro vertical (móviles)
 └── supabase/
     ├── schema.sql           → TODAS las tablas, RLS, RPCs, Realtime, Storage
     └── functions/
