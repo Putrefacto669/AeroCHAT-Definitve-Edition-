@@ -328,9 +328,8 @@ begin
   on conflict (id) do update
     set username = excluded.username,
         email = excluded.email,
-        display_name = excluded.display_name
-  returning true into me;
-  return me is not null;
+        display_name = excluded.display_name;
+  return true;
 end;
 $$;
 grant execute on function public.create_profile(text, text, text) to authenticated;
