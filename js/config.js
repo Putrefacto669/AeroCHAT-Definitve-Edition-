@@ -19,4 +19,4 @@ function acPublicUrl(bucket, path) {
 // GIPHY: buscador de GIFs (js/gifs.js). Dejá vacío para usar la beta key
 // pública de GIPHY (límite ~100 req/hora). Creá la tuya gratis en
 // https://developers.giphy.com → Create an App → API, y ponela acá.
-var AEROCHAT_GIPHY_KEY = "";
+var AEROCHAT_GIPHY_KEY = "wWbOYTeGLVx3pqYfIQp6qoYS2H8V5hL8";
