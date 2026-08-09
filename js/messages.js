@@ -512,8 +512,10 @@ function acSetRecordingUI(on) {
   if (form) {
     var attach = form.querySelector('.icon-btn-attach');
     var sticker = form.querySelector('.icon-btn-sticker');
+    var gif = form.querySelector('.icon-btn-gif');
     if (attach) attach.hidden = on;
     if (sticker) sticker.hidden = on;
+    if (gif) gif.hidden = on;
   }
   if (!on) acUpdateComposer();
 }
@@ -525,7 +527,7 @@ function acUpdateComposer() {
   var mic = document.getElementById('micBtn');
   var send = document.getElementById('sendBtn');
   if (mic) mic.hidden = has || acRec.running;
-  if (send) send.hidden = !has || acRec.running;
+  if (send) send.hidden = acRec.running;
 }
 
 function acInitComposer() {

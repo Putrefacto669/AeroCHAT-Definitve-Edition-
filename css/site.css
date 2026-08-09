@@ -528,7 +528,7 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   display: flex; align-items: center; gap: 8px;
 }
 .msg-input {
-  flex: 1; background: var(--input-bg); border: 1px solid var(--border);
+  flex: 1; min-width: 0; background: var(--input-bg); border: 1px solid var(--border);
   border-radius: 22px; padding: 9px 16px;
   color: var(--text); font-size: .93rem;
   transition: border-color var(--transition); resize: none; min-height: 40px; max-height: 120px;
@@ -1039,6 +1039,7 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .search-panel-head input, .sticker-import input, textarea, .edit-textarea, .modal input { font-size: 16px; }
   .icon-btn { width: 34px; height: 34px; font-size: .9rem; }
   .send-form { gap: 6px; }
+  .input-area { padding-left: 6px; padding-right: 6px; }
   .action-btn { width: 34px; height: 34px; }
   .msg-actions { gap: 6px; }
 
@@ -1071,6 +1072,9 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .rec-hint { display: none; }
   .rec-timer { min-width: 30px; }
   .gif-results { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+  .icon-btn { width: 32px; height: 32px; }
+  .send-form { gap: 4px; }
+  .msg-input { padding: 8px 10px; }
 }
 
 @media (max-width: 360px) {
