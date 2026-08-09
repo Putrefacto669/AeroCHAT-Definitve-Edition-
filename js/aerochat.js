@@ -173,6 +173,8 @@ function acInjectShell() {
     document.body.insertBefore(wrap, document.body.firstChild);
   }
   syncThemePills();
+  var ds = document.getElementById('discoverSearch');
+  if (ds) ds.addEventListener('input', acRenderSidebar);
 }
 
 function acShellHtml() {
@@ -203,6 +205,7 @@ function acShellHtml() {
       '<button class="mini-btn mini-add mini-add-group" title="Nuevo grupo" onclick="openNewGroup()">＋</button></div>' +
     '<div class="user-list sidebar-list" id="groupList"></div>' +
     '<div class="sidebar-section-label">Descubrir</div>' +
+    '<input type="search" class="sidebar-search" id="discoverSearch" placeholder="Buscar usuarios…"/>' +
     '<div class="user-list sidebar-list" id="discoverList"></div>' +
     '<div class="sidebar-footer"><a href="javascript:logout()" class="btn-logout"><span>↩</span> Cerrar sesión</a></div>' +
   '</aside>' +
@@ -297,7 +300,6 @@ function acRenderSidebar() {
 
   var requests = AC.users.filter(function (u) { return u.friend_state === 'incoming'; });
   var friends = AC.users.filter(function (u) { return u.friend_state === 'friends'; });
-  var discover = AC.users.filter(function (u) { return u.friend_state === 'none' || u.friend_state === 'outgoing'; });
 
   // ── Solicitudes ──
   var reqBadge = document.getElementById('requestBadge');
@@ -358,17 +360,38 @@ function acRenderSidebar() {
   // ── Descubrir ──
   var discoverList = document.getElementById('discoverList');
   if (discoverList) {
+    var ds = document.getElementById('discoverSearch');
+    var q = ds ? ds.value.trim().toLowerCase() : '';
+    var discover = q
+      ? AC.users.filter(function (u) {
+          return (u.username && u.username.toLowerCase().indexOf(q) >= 0) ||
+                 (u.display_name && u.display_name.toLowerCase().indexOf(q) >= 0);
+        })
+      : AC.users.filter(function (u) { return u.friend_state === 'none' || u.friend_state === 'outgoing'; });
     discoverList.innerHTML = discover.map(function (u) {
       return '<a href="conversation.html?u=' + u.id + '" class="user-item">' +
         acAvatarHtml(u, 'avatar avatar-md') +
         '<div class="user-item-info"><span class="user-item-name">' + escapeHtml(u.display_name) + '</span>' +
         '<span class="user-item-sub">' + escapeHtml(u.status || ('@' + u.username)) + '</span></div>' +
-        (u.friend_state === 'outgoing'
-          ? '<span class="mini-btn pending" title="Solicitud enviada" onclick="event.preventDefault()">⏳</span>'
-          : '<span class="mini-btn mini-add" title="Agregar amigo" onclick="event.preventDefault();sendFriendRequest(\'' + u.id + '\')">＋</span>') +
+        acDiscoverAction(u) +
         '</a>';
-    }).join('') || '';
+    }).join('') ||
+      '<div class="sidebar-empty">' + (q ? 'No se encontraron usuarios.' : 'Sin usuarios por descubrir.') + '</div>';
   }
+}
+
+// Acción según el estado de amistad en Descubrir / búsqueda.
+function acDiscoverAction(u) {
+  if (u.friend_state === 'outgoing') {
+    return '<span class="mini-btn pending" title="Solicitud enviada" onclick="event.preventDefault()">⏳</span>';
+  }
+  if (u.friend_state === 'incoming') {
+    return '<button class="mini-btn mini-accept" title="Aceptar solicitud" onclick="event.preventDefault();acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">✓</button>';
+  }
+  if (u.friend_state === 'friends') {
+    return '<span class="mini-btn pending" title="Ya son amigos" onclick="event.preventDefault()">✓</span>';
+  }
+  return '<span class="mini-btn mini-add" title="Agregar amigo" onclick="event.preventDefault();sendFriendRequest(\'' + u.id + '\')">＋</span>';
 }
 
 // ── Acciones de amistad ─────────────────────────────────────────────
