@@ -537,6 +537,47 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 .icon-btn-send:hover { filter: brightness(1.12); box-shadow: var(--glow); }
 .icon-btn-send:disabled { opacity: .4; cursor: not-allowed; }
 
+/* Micrófono / nota de voz */
+.icon-btn-mic { background: var(--grad); color: #fff; box-shadow: var(--glow-soft); }
+.icon-btn-mic:hover { filter: brightness(1.12); box-shadow: var(--glow); transform: scale(1.05); }
+.icon-btn-mic:active { transform: scale(.94); }
+.icon-btn-mic svg { display: block; }
+.icon-btn-mic.recording {
+  background: var(--danger, #FF453A); animation: recPulse 1.2s ease-in-out infinite;
+}
+@keyframes recPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 69, 58, .55); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 69, 58, 0); }
+}
+
+.rec-bar {
+  flex: 1; display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 22px; padding: 6px 8px 6px 14px; min-width: 0;
+}
+.rec-bar[hidden] { display: none; }
+.rec-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--danger, #FF453A);
+  animation: recDot 1s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes recDot { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+.rec-timer {
+  font-variant-numeric: tabular-nums; font-size: .85rem; font-weight: 700; color: var(--text);
+  min-width: 34px; flex-shrink: 0;
+}
+.rec-hint { flex: 1; font-size: .8rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-cancel, .rec-send {
+  width: 30px; height: 30px; border-radius: 50%; border: none; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all var(--transition);
+}
+.rec-cancel { background: var(--surface); color: var(--text-2); }
+.rec-cancel:hover { background: var(--border); color: var(--text); }
+.rec-send { background: var(--grad); color: #fff; box-shadow: var(--glow-soft); }
+.rec-send:hover { filter: brightness(1.12); }
+.rec-send:active { transform: scale(.92); }
+.rec-bar .ac-icon { display: block; }
+
 /* Attach panel */
 .attach-panel {
   overflow: hidden; max-height: 0; transition: max-height .22s ease, padding .22s ease;
@@ -884,9 +925,13 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 ═══════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   .profile-container { max-width: 100%; padding: 0 12px; }
+  .sidebar { width: 280px; }
+  .msg-image { max-width: 260px; max-height: 220px; }
+  .msg-video video { max-width: 260px; max-height: 220px; }
 }
 
 @media (max-width: 768px) {
+  .app-shell { height: 100vh; height: 100dvh; }
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0; z-index: 10;
     transform: translateX(-100%); width: 280px;
@@ -896,9 +941,16 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .sidebar-overlay.open { display: block; }
   .hamburger { display: flex; align-items: center; justify-content: center; }
 
-  .chat-header { padding: 10px 14px; min-height: 52px; }
-  .messages-area { padding: 10px 10px; }
-  .input-area { padding: 6px 8px 2px; }
+  .chat-header {
+    padding: 10px 12px; min-height: 52px;
+    padding-top: calc(10px + env(safe-area-inset-top));
+    padding-bottom: 10px;
+  }
+  .messages-area { padding: 10px 8px; }
+  .input-area {
+    padding: 6px 8px 2px;
+    padding-bottom: calc(2px + env(safe-area-inset-bottom));
+  }
 
   .profile-banner { height: 140px; }
   .profile-top { padding: 0 12px; margin-top: -36px; gap: 8px; flex-wrap: wrap; }
@@ -915,9 +967,15 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 
   .attach-options { flex-wrap: wrap; }
   .attach-opt { padding: 6px 12px; font-size: .78rem; }
+  .attach-panel.open { max-height: 130px; }
 
-  .msg-input { font-size: .88rem; padding: 8px 14px; }
+  .msg-input { font-size: 16px; padding: 8px 14px; }
+  .search-panel-head input, .sticker-import input, textarea, .edit-textarea, .modal input { font-size: 16px; }
   .icon-btn { width: 34px; height: 34px; font-size: .9rem; }
+  .send-form { gap: 6px; }
+
+  .sticker-panel:not([hidden]) { max-height: 320px; }
+  .sticker-panel-body { max-height: 200px; }
 
   .modal { max-width: 340px; padding: 18px; margin: 0 12px; }
 }
@@ -931,6 +989,7 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .avatar-lg { width: 56px; height: 56px; font-size: 1.3rem; border-width: 2px; }
   .profile-name { font-size: .95rem; }
   .chat-header-name { font-size: .9rem; }
+  .chat-header .icon-btn { width: 32px; height: 32px; }
   .bubble { font-size: .88rem; padding: 7px 10px 6px; }
   .msg-text { font-size: .9rem; }
   .msg-image { max-width: 200px; max-height: 180px; }
@@ -938,6 +997,9 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   .login-brand-icon { width: 52px; height: 52px; font-size: 22px; }
   .login-brand h1 { font-size: 1.4rem; }
   .theme-toggle-pill { width: 24px; height: 18px; font-size: 10px; }
+  .rec-bar { padding: 5px 6px 5px 12px; }
+  .rec-hint { display: none; }
+  .rec-timer { min-width: 30px; }
 }
 
 @media (max-width: 360px) {

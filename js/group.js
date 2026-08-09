@@ -240,6 +240,7 @@ function groupInit() {
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); acSendText(); }
   });
+  acInitComposer();
 
   // Escribiendo…
   var typingTimer = null;

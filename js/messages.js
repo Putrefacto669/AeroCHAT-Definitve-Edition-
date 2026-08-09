@@ -346,6 +346,7 @@ function acSendText() {
   input.value = '';
   var rid = AC.replyTo ? AC.replyTo.id : null;
   cancelReply();
+  acUpdateComposer();
   acSendMessageContent('text', content, null, null, null, rid);
 }
 
@@ -370,6 +371,119 @@ function acSendAttach(type, file) {
   acUpload('messages', path, file)
     .then(function (url) { return acSendMessageContent(type, '', url, file.name, file.size, null); })
     .catch(function (e) { acToastError(e, 'No se pudo subir el archivo'); });
+}
+
+// ── Notas de voz (grabación por micrófono) ─────────────────────────
+var acRec = { mr: null, chunks: [], stream: null, timer: null, secs: 0, running: false, wantSend: false };
+
+function acStartRecording() {
+  if (acRec.running) return;
+  if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('Tu navegador no permite grabar audio', 'error');
+    return;
+  }
+  var ap = document.getElementById('attachPanel');
+  if (ap) ap.classList.remove('open');
+  var sp = document.getElementById('stickerPanel');
+  if (sp) { sp.hidden = true; sp.classList.remove('open'); }
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+    acRec.stream = stream;
+    acRec.chunks = [];
+    var opts = {};
+    if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+      opts.mimeType = 'audio/webm;codecs=opus';
+    } else if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mp4')) {
+      opts.mimeType = 'audio/mp4';
+    }
+    acRec.mr = new MediaRecorder(stream, opts);
+    acRec.mr.ondataavailable = function (e) { if (e.data && e.data.size) acRec.chunks.push(e.data); };
+    acRec.mr.onstop = acRecordingFinished;
+    acRec.mr.start();
+    acRec.secs = 0;
+    acRec.running = true;
+    acRec.wantSend = false;
+    acSetRecordingUI(true);
+    acRec.timer = setInterval(function () {
+      acRec.secs++;
+      if (acRec.secs >= 60) acStopRecording(true);
+      var t = document.getElementById('recTimer');
+      if (t) t.textContent = Math.floor(acRec.secs / 60) + ':' + String(acRec.secs % 60).padStart(2, '0');
+    }, 1000);
+  }).catch(function (e) {
+    acToastError(e, 'No se pudo acceder al micrófono');
+  });
+}
+
+function acStopRecording(send) {
+  if (!acRec.running) return;
+  acRec.wantSend = !!send;
+  if (acRec.mr && acRec.mr.state !== 'inactive') {
+    try { acRec.mr.stop(); return; } catch (e) {}
+  }
+  acRecordingFinished();
+}
+
+function acRecordingFinished() {
+  clearInterval(acRec.timer);
+  acRec.timer = null;
+  acRec.running = false;
+  acSetRecordingUI(false);
+  if (acRec.stream) { acRec.stream.getTracks().forEach(function (t) { t.stop(); }); acRec.stream = null; }
+  var send = acRec.wantSend;
+  var chunks = acRec.chunks;
+  acRec.chunks = [];
+  if (!send || !chunks.length) return;
+  var blob = new Blob(chunks, { type: 'audio/webm' });
+  var ext = 'webm';
+  if (acRec.mr && acRec.mr.mimeType && acRec.mr.mimeType.indexOf('mp4') !== -1) ext = 'm4a';
+  acRec.mr = null;
+  var path = AC.me.id + '/' + acRandomId() + '.' + ext;
+  var fileName = 'Nota de voz.' + ext;
+  var file = new File([blob], fileName, { type: 'audio/' + ext });
+  acUpload('messages', path, file)
+    .then(function (url) {
+      return acSendMessageContent('audio', '', url, fileName, file.size, AC.replyTo ? AC.replyTo.id : null);
+    })
+    .catch(function (e) { acToastError(e, 'No se pudo subir la nota de voz'); });
+}
+
+function acSetRecordingUI(on) {
+  var form = document.getElementById('sendForm');
+  var bar = document.getElementById('recBar');
+  var input = document.getElementById('msgInput');
+  var mic = document.getElementById('micBtn');
+  var send = document.getElementById('sendBtn');
+  if (form) form.classList.toggle('recording', on);
+  if (bar) bar.hidden = !on;
+  if (input) input.hidden = on;
+  if (mic) mic.hidden = on;
+  if (send) send.hidden = on;
+  if (form) {
+    var attach = form.querySelector('.icon-btn-attach');
+    var sticker = form.querySelector('.icon-btn-sticker');
+    if (attach) attach.hidden = on;
+    if (sticker) sticker.hidden = on;
+  }
+  if (!on) acUpdateComposer();
+}
+
+function acUpdateComposer() {
+  var input = document.getElementById('msgInput');
+  if (!input) return;
+  var has = input.value.trim().length > 0;
+  var mic = document.getElementById('micBtn');
+  var send = document.getElementById('sendBtn');
+  if (mic) mic.hidden = has || acRec.running;
+  if (send) send.hidden = !has || acRec.running;
+}
+
+function acInitComposer() {
+  var input = document.getElementById('msgInput');
+  if (!input || input.dataset.acBound) return;
+  input.dataset.acBound = '1';
+  input.addEventListener('input', acUpdateComposer);
+  acUpdateComposer();
 }
 
 // ── Búsqueda ────────────────────────────────────────────────────────
