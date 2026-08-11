@@ -117,6 +117,7 @@ function acOnMessageChange(payload) {
       if (payload.eventType === 'INSERT' && m.sender_id !== AC.authUser.id) acMarkDirectRead(other);
     } else {
       acRefreshSidebar();
+      if (payload.eventType === 'INSERT' && typeof acNotifyMessage === 'function') acNotifyMessage(m);
     }
   } else if (m.scope === 'group') {
     if (AC.view && AC.view.kind === 'group' && AC.view.id === m.receiver_id) {
@@ -124,6 +125,7 @@ function acOnMessageChange(payload) {
       if (payload.eventType === 'INSERT' && m.sender_id !== AC.authUser.id) acMarkGroupRead(m.receiver_id);
     } else {
       acRefreshSidebar();
+      if (payload.eventType === 'INSERT' && typeof acNotifyMessage === 'function') acNotifyMessage(m);
     }
   }
 }

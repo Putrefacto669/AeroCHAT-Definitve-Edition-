@@ -154,7 +154,8 @@ var acIconMap = {
   clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
   'at': '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>',
   paperclip: '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
-  status: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/>'
+  status: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/>',
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'
 };
 
 function acIcon(name, size, cls, filled) {
@@ -236,6 +237,7 @@ function acShellHtml() {
       '<div class="sidebar-top-row">' +
         '<div class="sidebar-brand">' + acIcon('plane', 15) + ' AeroChat</div>' +
         '<div class="sidebar-top-actions">' +
+          '<button class="sidebar-notify-btn" id="notifyBtn" onclick="acNotifyToggle()" title="Activar notificaciones" aria-label="Notificaciones">' + acIcon('bell', 16) + '</button>' +
           '<a href="requests.html" class="sidebar-req-link" id="requestsLink" title="Solicitudes de amistad">' + acIcon('users', 16) +
             '<span class="badge" id="requestBadge" hidden></span></a>' +
           '<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">' +
@@ -618,6 +620,7 @@ function acInitApp(cb) {
     document.body.setAttribute('data-userid', AC.authUser.id);
     document.body.setAttribute('data-name', session.user.user_metadata && session.user.user_metadata.display_name || '');
     acInjectShell();
+    if (typeof updateNotifyBtn === 'function') updateNotifyBtn();
     acInitRealtime();            // realtime.js
     acLoadSidebar().then(function () {
       applyPresence();

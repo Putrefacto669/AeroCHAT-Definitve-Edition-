@@ -50,6 +50,7 @@ function submitLogin() {
       if (/invalid login credentials/i.test(msg)) msg = 'Usuario o contraseña incorrectos.';
       throw { message: msg };
     }
+    if (typeof acNotifyAskOnLogin === 'function') acNotifyAskOnLogin();
     location.href = 'chat.html';
   }).catch(function (e) {
     showError((e && e.message) || 'Usuario o contraseña incorrectos.');
@@ -109,6 +110,7 @@ function submitRegister() {
     }).then(function (r2) {
       if (r2.error) throw r2.error;
       if (!r2.data) throw { message: 'Error al crear el usuario. Intentalo de nuevo.' };
+      if (typeof acNotifyAskOnLogin === 'function') acNotifyAskOnLogin();
       location.href = 'chat.html';
     });
   }).catch(function (e) {
