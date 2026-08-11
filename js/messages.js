@@ -107,7 +107,8 @@ function buildMessageRow(msg) {
     }
     reactionsHtml = '<div class="msg-reactions">';
     Object.keys(grouped).forEach(function (e) {
-      reactionsHtml += '<button class="reaction-chip' + (mineSet[e] ? ' mine' : '') + '" data-emoji="' + e + '" onclick="toggleReaction(\'' + msg.id + '\',\'' + e + '\')"><span class="rc-emoji">' + e + '</span><span class="rc-count">' + grouped[e] + '</span></button>';
+      var eAttr = escapeHtml(e);
+      reactionsHtml += '<button class="reaction-chip' + (mineSet[e] ? ' mine' : '') + '" data-emoji="' + eAttr + '" onclick="toggleReaction(\'' + msg.id + '\',\'' + jsEncode(e) + '\')"><span class="rc-emoji">' + eAttr + '</span><span class="rc-count">' + grouped[e] + '</span></button>';
     });
     reactionsHtml += '<button class="reaction-add" title="Reaccionar" onclick="openReactionPicker(\'' + msg.id + '\', event)">' + acIcon('plus', 11) + '</button></div>';
   }
@@ -200,17 +201,25 @@ function acHandleLiveReaction(messageId, userId, emoji, added) {
   if (userId === AC.me.id) return;   // el propio RPC ya actualizó la UI
   var row = acMsgRow(messageId);
   if (!row) return;
-  var chip = row.querySelector('.reaction-chip[data-emoji="' + emoji + '"]');
+  var chip = acReactionChip(row, emoji);
   var current = chip ? parseInt(chip.querySelector('.rc-count').textContent, 10) : 0;
   var count = added ? current + 1 : current - 1;
   applyReaction(messageId, emoji, userId, added, Math.max(count, 0));
 }
 
 // ── Reacciones ──────────────────────────────────────────────────────
+function acReactionChip(row, emoji) {
+  var chips = row.querySelectorAll('.reaction-chip');
+  for (var i = 0; i < chips.length; i++) {
+    if (chips[i].getAttribute('data-emoji') === emoji) return chips[i];
+  }
+  return null;
+}
+
 function applyReaction(messageId, emoji, userId, added, count) {
   var row = acMsgRow(messageId);
   if (!row) return;
-  var chip = row.querySelector('.reaction-chip[data-emoji="' + emoji + '"]');
+  var chip = acReactionChip(row, emoji);
   var mine = userId === AC.me.id;
   if (added) {
     if (chip) {
@@ -221,7 +230,7 @@ function applyReaction(messageId, emoji, userId, added, count) {
       btn.type = 'button';
       btn.className = 'reaction-chip' + (mine ? ' mine' : '');
       btn.setAttribute('data-emoji', emoji);
-      btn.innerHTML = '<span class="rc-emoji">' + emoji + '</span><span class="rc-count">' + count + '</span>';
+      btn.innerHTML = '<span class="rc-emoji">' + escapeHtml(emoji) + '</span><span class="rc-count">' + count + '</span>';
       btn.onclick = function () { toggleReaction(messageId, emoji); };
       var wrap = row.querySelector('.msg-reactions');
       if (!wrap) {

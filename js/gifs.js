@@ -48,7 +48,9 @@ function acGifLoad(q) {
       d.data.forEach(function (g) {
         var im = g.images && (g.images.fixed_width_small || g.images.fixed_width || g.images.preview_gif);
         if (!im || !im.url) return;
-        html += '<button class="gif-cell" title="Enviar" onclick="acSendGif(\'' + g.id + '\')"><img src="' + im.url + '" alt="GIF" loading="lazy"/></button>';
+        var dl = g.images && (g.images.downsized || g.images.original) || null;
+        var src = dl && dl.url ? dl.url : im.url;
+        html += '<button class="gif-cell" title="Enviar" onclick="acSendGif(\'' + g.id + '\',\'' + src.replace(/'/g, "\\'") + '\')"><img src="' + im.url + '" alt="GIF" loading="lazy"/></button>';
       });
       grid.innerHTML = html || '<div class="sticker-empty">Sin resultados</div>';
     })
@@ -57,13 +59,34 @@ function acGifLoad(q) {
     });
 }
 
-function acSendGif(gifId) {
-  var url = 'https://media.giphy.com/media/' + encodeURIComponent(gifId) + '/giphy.gif';
-  acSendMessageContent('image', '', url, 'GIF.gif', null, AC.replyTo ? AC.replyTo.id : null);
+function acSendGif(gifId, url) {
+  var src = url || 'https://media.giphy.com/media/' + encodeURIComponent(gifId) + '/giphy.gif';
   var panel = document.getElementById('gifPanel');
   if (panel) panel.hidden = true;
   var btn = document.getElementById('gifBtn');
   if (btn) btn.classList.remove('active');
+  acSendGifFromUrl(src);
+}
+
+// Descarga el GIF y lo sube a Storage (bucket "messages"), igual que el resto
+// de adjuntos. Así el receptor siempre puede verlo aunque GIPHY esté
+// bloqueado por adblockers, redes o cache. Si la descarga falla, cae al
+// hotlink original como respaldo.
+function acSendGifFromUrl(src) {
+  fetch(src)
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+    .then(function (blob) {
+      var ext = (blob.type || '').indexOf('mp4') !== -1 ? 'mp4' : 'gif';
+      var path = AC.me.id + '/' + acRandomId() + '.' + ext;
+      var file = new File([blob], 'GIF.' + ext, { type: blob.type || 'image/gif' });
+      return acUpload('messages', path, file);
+    })
+    .then(function (storageUrl) {
+      return acSendMessageContent('image', '', storageUrl, 'GIF.gif', null, AC.replyTo ? AC.replyTo.id : null);
+    })
+    .catch(function () {
+      return acSendMessageContent('image', '', src, 'GIF.gif', null, AC.replyTo ? AC.replyTo.id : null);
+    });
 }
 
 (function () {

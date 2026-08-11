@@ -44,11 +44,17 @@ document.addEventListener('ac:presence', chatRenderPresence);
 
 function chatLoadPartner() {
   chatPartner = AC.usersById[chatPartnerId] || null;
-  if (chatPartner) { chatSetHeader(); return Promise.resolve(chatPartner); }
+  if (chatPartner) { AC.view.partner = chatPartner; chatSetHeader(); return Promise.resolve(chatPartner); }
   return AC.supabase.from('profiles')
     .select('id, username, display_name, avatar_color, avatar_path, status')
     .eq('id', chatPartnerId).maybeSingle().then(function (r) {
-      if (!r.error && r.data) { chatPartner = r.data; chatSetHeader(); return chatPartner; }
+      if (!r.error && r.data) {
+        chatPartner = r.data;
+        AC.view.partner = chatPartner;
+        chatSetHeader();
+        return chatPartner;
+      }
+      AC.view.partner = null;
       return null;
     });
 }
