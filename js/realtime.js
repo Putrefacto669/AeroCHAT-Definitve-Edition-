@@ -99,6 +99,7 @@ function acSubscribeTables() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, acOnFriendshipChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'groups' }, acOnGroupChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'statuses' }, acOnStatusChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'status_likes' }, acOnStatusLikeChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, acOnProfileChange)
     .subscribe();
   AC.channels.push(ch);
@@ -197,6 +198,23 @@ function acOnStatusChange(payload) {
     loadStatusStrip();
   }
   if (window.acOnStatusChangeHook) window.acOnStatusChangeHook(n, payload.eventType);
+}
+
+// Me gusta de estados: actualiza el contador en vivo del visor.
+function acOnStatusLikeChange(payload) {
+  var row = payload.new || payload.old || {};
+  if (!row.status_id || row.user_id === AC.authUser.id) return;
+  if (typeof statusGroups === 'undefined' || !statusGroups) return;
+  for (var g = 0; g < statusGroups.length; g++) {
+    for (var i = 0; i < statusGroups[g].items.length; i++) {
+      var s = statusGroups[g].items[i];
+      if (s.id !== row.status_id) continue;
+      if (payload.eventType === 'INSERT') s.likes_count = (s.likes_count || 0) + 1;
+      else if (payload.eventType === 'DELETE') s.likes_count = Math.max(0, (s.likes_count || 1) - 1);
+      if (g === sgIdx && i === siIdx && typeof renderStatusLike === 'function') renderStatusLike();
+      return;
+    }
+  }
 }
 
 function acOnProfileChange(payload) {

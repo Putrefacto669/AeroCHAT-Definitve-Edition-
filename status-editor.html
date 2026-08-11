@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Crear estado — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body class="status-editor-page">
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="se-wrap">
+  <header class="se-header">
+    <button type="button" class="btn btn-ghost se-back" onclick="seBack()">Cancelar</button>
+    <h1 class="se-title">Nuevo estado</h1>
+    <button type="button" class="btn btn-primary se-publish" id="sePublish" onclick="sePublish()">Publicar</button>
+  </header>
+
+  <div class="se-body">
+    <div class="se-pick" id="sePick">
+      <div class="se-pick-icon"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+      <h2 class="se-pick-title">Elegí una foto o un video</h2>
+      <p class="se-pick-sub">Después podés agregarle stickers y recortar el video.</p>
+      <div class="se-pick-btns">
+        <label class="btn btn-ghost status-media-btn se-file-label">Foto
+          <input type="file" accept="image/*" class="se-file-input" id="seFilePhoto" onchange="sePickFile(this, 'image')"/>
+        </label>
+        <label class="btn btn-ghost status-media-btn se-file-label">Video
+          <input type="file" accept="video/*" class="se-file-input" id="seFileVideo" onchange="sePickFile(this, 'video')"/>
+        </label>
+      </div>
+    </div>
+
+    <div class="se-editor" id="seEditor" hidden>
+      <div class="se-preview" id="sePreview">
+        <img id="sePreviewImg" class="se-media" alt="" hidden/>
+        <video id="sePreviewVideo" class="se-media" playsinline controls></video>
+        <div class="se-overlay" id="seOverlay"></div>
+      </div>
+      <div class="se-panel">
+        <textarea id="seCaption" class="se-caption" rows="1" placeholder="Agregá un texto (opcional)"></textarea>
+        <div class="se-tools">
+          <div class="se-trim" id="seTrim" hidden>
+            <div class="se-trim-head">
+              <span class="se-trim-label" id="seTrimLabel">0:00 – 0:00</span>
+              <span class="se-dur-label" id="seDurLabel"></span>
+              <button type="button" class="btn btn-ghost se-trim-play" id="seTrimPlay">Probar</button>
+            </div>
+            <div class="se-trim-ranges">
+              <div class="se-trim-track">
+                <input type="range" id="seTrimStart" min="0" step="0.05" value="0"/>
+                <input type="range" id="seTrimEnd" min="0" step="0.05" value="0"/>
+              </div>
+            </div>
+          </div>
+          <div class="se-stickers">
+            <div class="se-stickers-head">
+              <span class="se-stickers-title">Tus stickers</span>
+              <button type="button" class="btn btn-ghost se-stickers-clear" onclick="edClearStickers()">Quitar todos</button>
+            </div>
+            <div class="se-sticker-tabs" id="seStickerTabs"></div>
+            <div class="se-sticker-tray" id="seStickerTray"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/status-editor.js"></script>
+</body>
+</html>

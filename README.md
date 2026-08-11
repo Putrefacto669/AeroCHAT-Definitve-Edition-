@@ -21,7 +21,7 @@ importar stickers de sticker.ly.
 | Grupos (miembros, admin, avatar, llamadas de grupo) | `groups` + RPCs |
 | Reacciones y "escribiendo…" | `reactions` + Realtime (broadcast) |
 | No leídos y ticks de lectura (✓ / ✓✓) | `messages.read_by` + RPCs |
-| Estados (historias de 24 h) | `statuses` + RLS temporal |
+| Estados (historias de 24 h, video, me gusta) | `statuses` / `status_likes` + RLS temporal |
 | Stickers (favoritos, usados, importar sticker.ly) | `sticker_packs` / `sticker_favorites` / `sticker_usage` + Edge Function |
 | Presencia en línea y llamadas WebRTC (1:1 y grupo) | Realtime (presence + broadcast) + malla P2P |
 
@@ -36,6 +36,7 @@ AeroCHhat eb/
 ├── conversation.html        → chat directo (DM) con {?u=ID}
 ├── group.html               → chat de grupo con {?id=ID}
 ├── status.html              → visor de estados (historias)
+├── status-editor.html       → editor de estados (foto/video, stickers, recorte)
 ├── profile.html             → perfil de usuario con {?u=ID}
 ├── edit-profile.html        → editar mi perfil / avatar / banner
 ├── css/
@@ -165,7 +166,7 @@ canales pueden fallar.
 |---|---|---|
 | `aerochat-presence` | **presence** | Presencia en línea (mapa `AC.online`) |
 | `aerochat-typing` | **broadcast** | "escribiendo…" (`typing` / `stop_typing`) |
-| `aerochat-tables` | **postgres_changes** | `messages`, `reactions`, `friend_requests`, `friendships`, `groups`, `statuses`, `profiles` |
+| `aerochat-tables` | **postgres_changes** | `messages`, `reactions`, `friend_requests`, `friendships`, `groups`, `statuses`, `status_likes`, `profiles` |
 | `call-inbox-{userId}` | **broadcast** | Señales de llamada entrante / ocupado / cancelada / etc. |
 | `call-{roomId}` | **presence + broadcast** | Roster del mesh + señales WebRTC (offer/answer/candidate) |
 
@@ -216,7 +217,7 @@ Errores: `{ message: "..." }` con el código HTTP correspondiente.
 `rename_group`, `set_group_avatar`
 
 **Estados:** `add_status`, `delete_status`, `get_visible_statuses`,
-`cleanup_expired_statuses`
+`toggle_status_like`, `cleanup_expired_statuses`
 
 **Stickers:** `toggle_sticker_favorite`, `record_sticker_use`, `set_sticker_pack`,
 `get_sticker_packs`, `get_sticker_favorites`, `get_sticker_usage`

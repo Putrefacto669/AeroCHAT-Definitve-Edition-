@@ -119,10 +119,23 @@ create table if not exists public.statuses (
   user_color   text not null default '#6C63FF',
   user_avatar  text,
   content      text not null default '',
-  type         text not null default 'text' check (type in ('text','image')),
+  type         text not null default 'text',
   file_path    text,
   file_name    text,
   created_at   timestamptz not null default now()
+);
+
+-- 1.7b Permitir foto, video y texto en estados (idempotente para DBs existentes).
+alter table public.statuses drop constraint if exists statuses_type_check;
+alter table public.statuses add constraint statuses_type_check check (type in ('text','image','video'));
+
+-- 1.7c Me gusta de estados (un like por usuario y estado).
+create table if not exists public.status_likes (
+  id           uuid primary key default gen_random_uuid(),
+  status_id    uuid not null references public.statuses(id) on delete cascade,
+  user_id      uuid not null references public.profiles(id) on delete cascade,
+  created_at   timestamptz not null default now(),
+  unique (status_id, user_id)
 );
 
 -- 1.8 Librería de stickers (metadata; los archivos viven en Storage)
@@ -158,6 +171,7 @@ create index if not exists idx_reactions_message  on public.reactions (message_i
 create index if not exists idx_requests_to        on public.friend_requests (to_user, from_user);
 create index if not exists idx_friends_user       on public.friendships (user_id, friend_id);
 create index if not exists idx_statuses_time      on public.statuses (user_id, created_at);
+create index if not exists idx_status_likes_status on public.status_likes (status_id);
 
 -- ═══════════════════════════════════════════════════════════════════
 --  2. ROW LEVEL SECURITY
@@ -171,6 +185,7 @@ alter table public.groups            enable row level security;
 alter table public.messages          enable row level security;
 alter table public.reactions         enable row level security;
 alter table public.statuses          enable row level security;
+alter table public.status_likes      enable row level security;
 alter table public.sticker_packs     enable row level security;
 alter table public.sticker_favorites enable row level security;
 alter table public.sticker_usage     enable row level security;
@@ -236,6 +251,25 @@ create policy "statuses_select_visible" on public.statuses
         where (f.user_id = auth.uid() and f.friend_id = user_id)
            or (f.friend_id = auth.uid() and f.user_id = user_id)
       )
+    )
+  );
+
+-- status_likes: visibles solo para quien puede ver el estado (autor + amigos, < 24h).
+drop policy if exists "status_likes_select_visible" on public.status_likes;
+create policy "status_likes_select_visible" on public.status_likes
+  for select to authenticated using (
+    exists (
+      select 1 from public.statuses s
+      where s.id = status_id
+        and s.created_at >= now() - interval '24 hours'
+        and (
+          s.user_id = auth.uid()
+          or exists (
+            select 1 from public.friendships f
+            where (f.user_id = auth.uid() and f.friend_id = s.user_id)
+               or (f.friend_id = auth.uid() and f.user_id = s.user_id)
+          )
+        )
     )
   );
 
@@ -789,7 +823,7 @@ create or replace function public.add_status(
 declare me uuid := auth.uid(); s public.statuses;
 begin
   if me is null then return null; end if;
-  if p_type = 'image' and nullif(p_file_path, '') is null then return null; end if;
+  if p_type in ('image','video') and nullif(p_file_path, '') is null then return null; end if;
   if p_type = 'text' and nullif(p_content, '') is null then return null; end if;
   insert into public.statuses (user_id, user_name, user_color, user_avatar, content, type, file_path, file_name)
   values (me,
@@ -813,7 +847,22 @@ declare me uuid := auth.uid();
 begin
   if me is null then return '[]'::jsonb; end if;
   return coalesce((
-    select jsonb_agg(to_jsonb(s) order by s.user_id, s.created_at)
+    select jsonb_agg(
+      jsonb_build_object(
+        'id', s.id,
+        'user_id', s.user_id,
+        'user_name', s.user_name,
+        'user_color', s.user_color,
+        'user_avatar', s.user_avatar,
+        'content', s.content,
+        'type', s.type,
+        'file_path', s.file_path,
+        'file_name', s.file_name,
+        'created_at', s.created_at,
+        'likes_count', (select count(*) from public.status_likes sl where sl.status_id = s.id),
+        'liked_by_me', exists (select 1 from public.status_likes sl2 where sl2.status_id = s.id and sl2.user_id = me)
+      ) order by s.user_id, s.created_at
+    )
     from public.statuses s
     where s.created_at >= now() - interval '24 hours'
       and (
@@ -825,6 +874,36 @@ begin
         )
       )
   ), '[]'::jsonb);
+end;
+$$;
+
+create or replace function public.toggle_status_like(p_status uuid) returns jsonb
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare me uuid := auth.uid(); liked boolean; cnt int;
+begin
+  if me is null then return null; end if;
+  if not exists (
+    select 1 from public.statuses s
+    where s.id = p_status
+      and s.created_at >= now() - interval '24 hours'
+      and (
+        s.user_id = me
+        or exists (
+          select 1 from public.friendships f
+          where (f.user_id = me and f.friend_id = s.user_id)
+             or (f.friend_id = me and f.user_id = s.user_id)
+        )
+      )
+  ) then return null; end if;
+  if exists (select 1 from public.status_likes where status_id = p_status and user_id = me) then
+    delete from public.status_likes where status_id = p_status and user_id = me;
+    liked := false;
+  else
+    insert into public.status_likes (status_id, user_id) values (p_status, me);
+    liked := true;
+  end if;
+  select count(*) into cnt from public.status_likes where status_id = p_status;
+  return jsonb_build_object('status_id', p_status, 'liked', liked, 'count', cnt);
 end;
 $$;
 
@@ -948,7 +1027,7 @@ $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['messages','reactions','friend_requests','friendships','groups','statuses','profiles'] loop
+  foreach t in array array['messages','reactions','friend_requests','friendships','groups','statuses','status_likes','profiles'] loop
     if not exists (select 1 from pg_publication_tables
                    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
       execute format('alter publication supabase_realtime add table public.%I', t);

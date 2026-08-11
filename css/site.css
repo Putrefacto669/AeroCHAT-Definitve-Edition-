@@ -1325,20 +1325,23 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 .call-mute.muted { background: var(--danger); color: #fff; }
 /* ── Status strip (sidebar) ── */
 .status-strip {
-  display: flex; gap: 10px; overflow-x: auto; padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  display: flex; gap: 14px; overflow-x: auto; padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border); scrollbar-width: none;
 }
+.status-strip::-webkit-scrollbar { display: none; }
 .status-strip-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  text-decoration: none; color: var(--text); min-width: 58px; max-width: 64px;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  text-decoration: none; color: var(--text); min-width: 64px; max-width: 76px;
 }
 .status-strip-item:hover .status-strip-name { color: var(--accent); }
 .status-ring {
-  position: relative; width: 42px; height: 42px; border-radius: 50%;
-  padding: 3px; background: var(--surface2);
+  position: relative; width: 48px; height: 48px; border-radius: 50%;
+  padding: 3px; background: var(--surface2); display: block; flex-shrink: 0;
+  transition: transform var(--transition);
 }
+a.status-ring:active { transform: scale(.94); }
 .status-ring .avatar {
-  width: 100%; height: 100%; font-size: 1rem; border-radius: 50%;
+  width: 100%; height: 100%; font-size: 1.1rem; border-radius: 50%;
   position: relative; z-index: 1;
 }
 .status-ring.has-status::after {
@@ -1346,24 +1349,31 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
   background: conic-gradient(var(--accent), var(--accent2), var(--accent));
 }
 .status-strip-add {
-  position: absolute; right: -2px; bottom: -2px; width: 16px; height: 16px;
-  border-radius: 50%; background: var(--accent); color: #fff; font-size: .7rem;
+  position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--accent); color: #fff; font-size: .74rem;
   display: flex; align-items: center; justify-content: center; z-index: 2;
   border: 2px solid var(--surface);
 }
+.status-strip-edit {
+  position: absolute; top: 4px; right: 0; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--glass); border: 1px solid var(--border-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; text-decoration: none;
+  backdrop-filter: blur(8px); z-index: 2; transition: background var(--transition);
+}
+.status-strip-edit:hover { background: var(--surface2); }
 .status-strip-name {
-  font-size: .68rem; font-weight: 600; max-width: 64px;
+  font-size: .7rem; font-weight: 600; max-width: 76px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .status-strip-hint { font-size: .72rem; color: var(--text-3); line-height: 1.4; padding: 2px 0; }
 
-/* ── Status viewer ── */
+/* ── Status viewer (tipo stories) ── */
 .status-main { background: var(--bg); }
 .status-viewer {
   position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden;
-  background: linear-gradient(160deg, var(--bg2), var(--bg));
+  background: radial-gradient(120% 120% at 50% 0%, var(--bg2) 0%, var(--bg) 62%);
 }
-.status-progress { display: flex; gap: 4px; padding: 12px 14px 4px; }
+.status-progress { display: flex; gap: 4px; padding: 14px 14px 6px; }
 .status-progress-bar {
   flex: 1; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; position: relative;
 }
@@ -1376,37 +1386,151 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 @keyframes statusProgress { from { width: 0; } to { width: 100%; } }
 .status-progress-bar.done::before { content: ''; position: absolute; inset: 0; background: var(--accent2); }
 .status-head {
-  display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45), transparent);
 }
 .status-avatar {
-  width: 40px; height: 40px; border-radius: 50%; color: #fff; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center; font-size: 1rem;
-  overflow: hidden; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 50%; color: #fff; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.05rem;
+  overflow: hidden; flex-shrink: 0; box-shadow: var(--shadow-sm);
 }
 .status-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.status-name { font-size: .92rem; font-weight: 700; }
+.status-name { font-size: .95rem; font-weight: 700; }
 .status-time { font-size: .74rem; color: var(--text-2); }
 .status-body {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  padding: 16px; min-height: 0;
+  padding: 0; min-height: 0; background: #000;
 }
 .status-text {
-  font-size: 1.35rem; font-weight: 600; text-align: center; line-height: 1.5;
-  max-width: 90%; word-break: break-word; padding: 20px;
+  font-size: 1.4rem; font-weight: 600; text-align: center; line-height: 1.5;
+  max-width: 90%; word-break: break-word; padding: 24px; color: #fff;
 }
-.status-media {
-  max-width: 100%; max-height: 100%; border-radius: 12px; object-fit: contain;
-}
+.status-media { width: 100%; height: 100%; object-fit: cover; }
 .status-nav {
   position: absolute; top: 0; bottom: 0; width: 35%; cursor: pointer;
 }
 .status-nav-prev { left: 0; }
 .status-nav-next { right: 0; }
 .status-actions {
-  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
-  padding: 12px 16px; border-top: 1px solid var(--border);
+  display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-soft);
+  background: var(--glass); backdrop-filter: blur(24px) saturate(180%);
 }
+.status-actions .btn { padding: 8px 14px; }
+.status-like-btn { position: relative; }
+.status-like-btn.liked { color: var(--danger); }
+.status-like-btn.liked svg { fill: currentColor; }
+.status-like-btn:disabled { opacity: .6; }
+.status-like-count { font-weight: 700; margin-left: 4px; }
 .btn-new-status { align-self: center; margin-left: auto; }
+.new-status-media { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-media-btn { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ── Editor de estados (status-editor.html) ── */
+.status-editor-page { background: var(--bg); height: 100%; overflow: hidden; }
+.se-pick[hidden], .se-editor[hidden], .se-media[hidden], .se-trim[hidden] { display: none !important; }
+.se-wrap { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+.se-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px calc(12px + env(safe-area-inset-top)); border-bottom: 1px solid var(--border-soft);
+  background: var(--glass); backdrop-filter: blur(24px) saturate(180%); z-index: 5;
+}
+.se-title { font-size: 1rem; font-weight: 700; }
+.se-publish { min-width: 96px; }
+.se-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.se-pick {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 24px; text-align: center;
+}
+.se-pick-icon {
+  width: 84px; height: 84px; border-radius: 28px; background: var(--accent-soft);
+  color: var(--accent); display: flex; align-items: center; justify-content: center;
+}
+.se-pick-title { font-size: 1.15rem; font-weight: 700; }
+.se-pick-sub { color: var(--text-2); font-size: .88rem; max-width: 300px; }
+.se-pick-btns { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+.se-file-label { cursor: pointer; }
+.se-file-input { display: none; }
+
+.se-editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.se-preview {
+  position: relative; flex: 1; min-height: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; background: #000;
+}
+.se-media { width: 100%; height: 100%; object-fit: cover; }
+.se-overlay { position: absolute; inset: 0; pointer-events: none; }
+.ed-sticker {
+  position: absolute; pointer-events: auto; cursor: grab; user-select: none; -webkit-user-select: none;
+  touch-action: none;
+}
+.ed-sticker img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.ed-sticker.selected { outline: 2px dashed var(--accent); outline-offset: 2px; }
+.ed-sticker-del {
+  position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--danger); color: #fff; border: none; padding: 0;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  opacity: 0; transition: opacity var(--transition);
+}
+.ed-sticker.selected .ed-sticker-del { opacity: 1; }
+.ed-sticker-resize {
+  position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 2px solid #fff; cursor: nwse-resize;
+  opacity: 0; transition: opacity var(--transition);
+}
+.ed-sticker.selected .ed-sticker-resize { opacity: 1; }
+
+.se-panel {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-soft); background: var(--surface);
+  max-height: 46%; overflow: auto;
+}
+.se-caption {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-size: .92rem;
+  resize: none; min-height: 0;
+}
+.se-caption:focus { outline: none; border-color: var(--accent); }
+.se-tools { display: flex; flex-direction: column; gap: 10px; }
+.se-trim { background: var(--surface2); border-radius: var(--radius); padding: 10px 12px; }
+.se-trim-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.se-trim-label { font-size: .85rem; font-weight: 700; }
+.se-dur-label { font-size: .74rem; color: var(--text-2); flex: 1; }
+.se-trim-play { padding: 4px 12px; font-size: .8rem; }
+.se-trim-track { position: relative; height: 28px; }
+.se-trim-track input[type="range"] {
+  position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 100%; margin: 0;
+  background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none;
+}
+.se-trim-track input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.se-trim-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent);
+  border: 3px solid #fff; pointer-events: auto; cursor: grab; margin-top: -6px; box-shadow: var(--shadow-sm);
+}
+.se-trim-track input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
+  border: 3px solid #fff; pointer-events: auto; cursor: grab;
+}
+.se-stickers-head { display: flex; align-items: center; justify-content: space-between; }
+.se-stickers-title { font-size: .85rem; font-weight: 700; }
+.se-stickers-clear { padding: 4px 10px; font-size: .78rem; color: var(--danger); }
+.se-sticker-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.se-sticker-tab {
+  padding: 5px 10px; font-size: .74rem; font-weight: 600; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface2); color: var(--text-2);
+  cursor: pointer; white-space: nowrap;
+}
+.se-sticker-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.se-sticker-tray { display: flex; gap: 8px; overflow-x: auto; min-height: 64px; align-items: center; }
+.se-sticker-cell {
+  width: 56px; height: 56px; flex-shrink: 0; border-radius: 12px; padding: 6px;
+  background: var(--surface2); border: 1px solid var(--border); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--transition), border-color var(--transition);
+}
+.se-sticker-cell:hover { transform: scale(1.06); border-color: var(--accent); }
+.se-sticker-cell img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.se-pick .sticker-empty, .se-sticker-tray .sticker-empty { padding: 12px; font-size: .78rem; color: var(--text-2); }
 .call-hangup { background: var(--danger); color: #fff; }
 .call-hangup:hover { filter: brightness(1.1); }
 .call-accept { background: var(--accent2); color: #fff; }
@@ -1464,4 +1588,30 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 .call-invite-item:hover { background: var(--border); }
 .call-invite-go { margin-left: auto; color: var(--accent); }
 .btn-invite-close { width: 100%; }
+
+/* ── Estados: responsive ── */
+@media (max-width: 768px) {
+  .status-strip { gap: 12px; padding: 12px 12px 10px; }
+  .status-strip-item { min-width: 58px; max-width: 66px; }
+  .status-ring { width: 44px; height: 44px; }
+  .status-actions { gap: 6px; }
+  .status-actions .btn { padding: 7px 10px; font-size: .8rem; }
+  .status-like-count { margin-left: 3px; }
+  .se-panel { max-height: 52%; }
+  .se-pick-icon { width: 72px; height: 72px; border-radius: 24px; }
+}
+
+@media (max-width: 480px) {
+  .status-actions { justify-content: center; }
+  .status-actions .btn .ac-icon { width: 13px; height: 13px; }
+  .status-nav { width: 30%; }
+  .se-publish { min-width: 84px; }
+  .se-title { font-size: .92rem; }
+  .se-sticker-cell { width: 48px; height: 48px; }
+}
+
+@media (max-width: 360px) {
+  .status-ring { width: 40px; height: 40px; }
+  .status-strip-item { min-width: 54px; }
+}
 

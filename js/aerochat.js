@@ -278,12 +278,14 @@ function acShellHtml() {
     '<div class="modal">' +
       '<h3>Nuevo estado</h3>' +
       '<div class="field"><label for="statusContent">Texto</label>' +
-      '<textarea id="statusContent" class="edit-textarea" rows="3" placeholder="¿Qué estás haciendo?"></textarea></div>' +
-      '<div class="field"><label class="avatar-change-label">' + acIcon('image', 15) + ' Agregar foto' +
-      '<input type="file" id="statusImage" accept="image/*"/></label></div>' +
+      '<textarea id="statusContent" class="edit-textarea" rows="2" placeholder="¿Qué estás haciendo?"></textarea></div>' +
+      '<div class="new-status-media">' +
+        '<button type="button" class="btn btn-ghost status-media-btn" onclick="openStatusEditor(\'photo\')">' + acIcon('image', 15) + ' Foto</button>' +
+        '<button type="button" class="btn btn-ghost status-media-btn" onclick="openStatusEditor(\'video\')">' + acIcon('film', 15) + ' Video</button>' +
+      '</div>' +
       '<div class="modal-actions">' +
         '<button type="button" class="btn btn-secondary" onclick="closeModal(\'newStatusModal\')">Cancelar</button>' +
-        '<button type="button" class="btn btn-primary" onclick="submitNewStatus()">Publicar</button>' +
+        '<button type="button" class="btn btn-primary" onclick="submitNewStatus()">Publicar texto</button>' +
       '</div>' +
     '</div>' +
   '</div>' +
@@ -553,6 +555,12 @@ function createGroup() {
 
 // ── Tira de estados ─────────────────────────────────────────────────
 function openNewStatus() { openModal('newStatusModal'); }
+function openStatusEditor(kind) {
+  var t = document.getElementById('statusContent');
+  try { localStorage.setItem('ac-status-draft', (t ? t.value.trim() : '')); } catch (e) {}
+  closeModal('newStatusModal');
+  location.href = 'status-editor.html?type=' + (kind === 'video' ? 'video' : 'photo');
+}
 function loadStatusStrip() {
   var wrap = document.getElementById('statusStrip');
   if (!wrap) return;
@@ -566,20 +574,21 @@ function loadStatusStrip() {
       if (!groups[s.user_id]) groups[s.user_id] = { userId: s.user_id, userName: s.user_name, userColor: s.user_color, userAvatar: s.user_avatar, items: [] };
       groups[s.user_id].items.push(s);
     });
-    var html = '<a class="status-strip-item" href="status.html" title="Mi estado">' +
-      '<span class="status-ring' + (myStatuses.length ? ' has-status' : '') + '">' +
+    var html = '<div class="status-strip-item" title="Mi estado">' +
+      '<a class="status-ring' + (myStatuses.length ? ' has-status' : '') + '" href="status.html">' +
       (me ? acAvatarHtml(me, 'avatar avatar-md') : '') +
-      '<span class="status-strip-add">' + acIcon('plus', 10) + '</span></span>' +
-      '<span class="status-strip-name">Mi estado</span></a>';
+      '<span class="status-strip-add">' + acIcon('plus', 11) + '</span></a>' +
+      '<span class="status-strip-name">Mi estado</span>' +
+      '<a class="status-strip-edit" href="status-editor.html?type=photo" title="Crear estado">' + acIcon('plus', 12) + '</a></div>';
     Object.keys(groups).forEach(function (uid) {
       var g = groups[uid];
       var last = g.items[g.items.length - 1];
-      var preview = last && last.type === 'image' ? 'Foto' : (last ? last.content : '');
-      html += '<a class="status-strip-item" href="status.html?u=' + uid + '" title="' + escapeHtml(g.userName) + ': ' + escapeHtml(preview) + '">' +
-        '<span class="status-ring has-status">' +
+      var preview = last && last.type === 'image' ? 'Foto' : (last && last.type === 'video' ? 'Video' : (last ? last.content : ''));
+      html += '<div class="status-strip-item" title="' + escapeHtml(g.userName) + ': ' + escapeHtml(preview) + '">' +
+        '<a class="status-ring has-status" href="status.html?u=' + uid + '">' +
         (g.userAvatar ? '<img src="' + escapeHtml(g.userAvatar) + '" class="avatar avatar-md" alt=""/>'
                       : '<span class="avatar avatar-md" style="background:' + g.userColor + '">' + escapeHtml((g.userName || '?').charAt(0).toUpperCase()) + '</span>') +
-        '</span><span class="status-strip-name">' + escapeHtml(g.userName) + '</span></a>';
+        '</a><span class="status-strip-name">' + escapeHtml(g.userName) + '</span></div>';
     });
     if (!Object.keys(groups).length && !myStatuses.length) {
       html += '<div class="status-strip-hint">Tus estados y los de tus amigos aparecen acá</div>';
@@ -590,37 +599,24 @@ function loadStatusStrip() {
 
 function submitNewStatus() {
   var content = (document.getElementById('statusContent').value || '').trim();
-  var fileInput = document.getElementById('statusImage');
-  var file = fileInput && fileInput.files && fileInput.files[0];
+  if (!content) { showToast('Escribí algo para publicar un estado de texto.'); return; }
   var btn = document.querySelector('#newStatusModal .btn-primary');
   var old = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  var doAdd = function (type, path, name) {
-    return acAddStatus(type === 'image' ? '' : content, type, path || null, name || null);
-  };
-  var promise;
-  if (file) {
-    var path = AC.authUser.id + '/status-' + acRandomId() + '.' + acExt(file.name);
-    promise = acUpload('statuses', path, file).then(function (url) { return doAdd('image', url, file.name); });
-  } else if (content) {
-    promise = doAdd('text', null, null);
-  } else {
-    showToast('Escribí algo o elegí una foto.');
-    if (btn) { btn.disabled = false; btn.textContent = old; }
-    return;
-  }
-  promise.then(function () {
-    closeModal('newStatusModal');
-    document.getElementById('statusContent').value = '';
-    if (fileInput) fileInput.value = '';
-    showToast('Estado publicado.', 'success');
-    loadStatusStrip();
-  }).catch(function (e) {
-    console.error(e);
-    showToast('No se pudo publicar el estado.', 'error');
-  }).then(function () {
-    if (btn) { btn.disabled = false; btn.textContent = old; }
-  });
+  acAddStatus(content, 'text', null, null)
+    .then(function () {
+      closeModal('newStatusModal');
+      document.getElementById('statusContent').value = '';
+      showToast('Estado publicado.', 'success');
+      loadStatusStrip();
+    })
+    .catch(function (e) {
+      console.error(e);
+      showToast('No se pudo publicar el estado.', 'error');
+    })
+    .then(function () {
+      if (btn) { btn.disabled = false; btn.textContent = old; }
+    });
 }
 
 // ── Sesión / logout ─────────────────────────────────────────────────

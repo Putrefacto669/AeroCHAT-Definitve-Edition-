@@ -9,6 +9,7 @@
 var statusGroups = [];
 var statusFriends = [];
 var sgIdx = 0, siIdx = 0, sTimer = null;
+var sAdvancing = false;   // evita doble avance (video terminado + barra de progreso)
 var composeMode = 'reply';
 var composeTarget = null;
 
@@ -28,6 +29,7 @@ function curStatus() {
 
 function renderStatus() {
   if (sTimer) clearTimeout(sTimer);
+  sAdvancing = false;
   var g = statusGroups[sgIdx];
   var body = document.getElementById('statusBody');
   if (!g) { body.textContent = 'No hay estados todavía.'; return; }
@@ -42,11 +44,6 @@ function renderStatus() {
     prog.appendChild(bar);
   });
   var activeBar = prog.children[siIdx];
-  if (activeBar) {
-    activeBar.classList.add('active');
-    activeBar.classList.add(s.type === 'image' ? 'slow' : 'fast');
-    activeBar.addEventListener('animationend', nextStatus);
-  }
 
   var av = document.getElementById('statusAvatar');
   av.style.background = s.user_color || '#6C63FF';
@@ -55,20 +52,84 @@ function renderStatus() {
   document.getElementById('statusName').textContent = s.user_name;
   document.getElementById('statusTime').textContent = timeAgo(s.created_at);
 
+  var videoEl = null;
   if (s.type === 'image') {
     body.innerHTML = '<img class="status-media" src="' + escapeHtml(s.file_path) + '" alt=""/>';
+  } else if (s.type === 'video') {
+    body.innerHTML = '';
+    videoEl = document.createElement('video');
+    videoEl.className = 'status-media';
+    videoEl.src = s.file_path;
+    videoEl.controls = true;
+    videoEl.playsInline = true;
+    videoEl.autoplay = true;
+    body.appendChild(videoEl);
   } else {
     body.innerHTML = '<div class="status-text"></div>';
     body.firstChild.textContent = s.content || '';
+  }
+
+  if (activeBar) {
+    if (s.type === 'video') {
+      activeBar.classList.add('active');
+      activeBar.style.animationDuration = '15s';
+      var setDur = function () {
+        var d = (videoEl && videoEl.duration) || 15;
+        activeBar.style.animationDuration = Math.min(d, 120) + 's';
+        activeBar.classList.remove('active');
+        void activeBar.offsetWidth;
+        activeBar.classList.add('active');
+      };
+      if (videoEl) {
+        if (videoEl.readyState >= 1) setDur();
+        else videoEl.addEventListener('loadedmetadata', setDur);
+        videoEl.addEventListener('ended', nextStatus);
+      }
+      activeBar.addEventListener('animationend', nextStatus);
+    } else {
+      activeBar.classList.add('active');
+      activeBar.classList.add(s.type === 'image' ? 'slow' : 'fast');
+      activeBar.addEventListener('animationend', nextStatus);
+    }
   }
 
   var isMine = s.user_id === AC.authUser.id;
   document.getElementById('replyBtn').style.display = isMine ? 'none' : '';
   document.getElementById('mentionBtn').style.display = isMine ? 'none' : '';
   document.getElementById('deleteBtn').style.display = isMine ? '' : 'none';
+  renderStatusLike();
+}
+
+// ── Me gusta ─────────────────────────────────────────────────────────
+function renderStatusLike() {
+  var s = curStatus();
+  var btn = document.getElementById('likeBtn');
+  if (!btn || !s) return;
+  var isMine = s.user_id === AC.authUser.id;
+  btn.style.display = isMine ? 'none' : '';
+  btn.classList.toggle('liked', !!s.liked_by_me);
+  var count = document.getElementById('likeCount');
+  if (count) count.textContent = s.likes_count || 0;
+}
+
+function toggleStatusLike() {
+  var s = curStatus();
+  if (!s) return;
+  var btn = document.getElementById('likeBtn');
+  if (btn) btn.disabled = true;
+  acToggleStatusLike(s.id).then(function (r) {
+    if (r) { s.likes_count = r.count; s.liked_by_me = r.liked; }
+    renderStatusLike();
+    if (btn) btn.disabled = false;
+  }).catch(function (e) {
+    if (btn) btn.disabled = false;
+    acToastError(e, 'No se pudo dar me gusta');
+  });
 }
 
 function nextStatus() {
+  if (sAdvancing) return;
+  sAdvancing = true;
   var g = statusGroups[sgIdx];
   if (!g) return;
   if (siIdx < g.items.length - 1) { siIdx++; renderStatus(); }

@@ -110,6 +110,7 @@ function acAddStatus(content, type, filePath, fileName) {
 }
 function acDeleteStatus(id) { return acRpc('delete_status', { p_status: id }); }
 function acGetVisibleStatuses() { return acRpc('get_visible_statuses'); }
+function acToggleStatusLike(statusId) { return acRpc('toggle_status_like', { p_status: statusId }); }
 
 // ── Stickers ────────────────────────────────────────────────────────
 function acGetStickerPacks() { return acRpc('get_sticker_packs'); }
