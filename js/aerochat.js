@@ -235,10 +235,14 @@ function acShellHtml() {
     '<div class="sidebar-header">' +
       '<div class="sidebar-top-row">' +
         '<div class="sidebar-brand">' + acIcon('plane', 15) + ' AeroChat</div>' +
-        '<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">' +
-          '<div class="theme-toggle-pill theme-pill-dark active">' + acIcon('moon', 13) + '</div>' +
-          '<div class="theme-toggle-pill theme-pill-light">' + acIcon('sun', 13) + '</div>' +
-        '</button>' +
+        '<div class="sidebar-top-actions">' +
+          '<a href="requests.html" class="sidebar-req-link" id="requestsLink" title="Solicitudes de amistad">' + acIcon('users', 16) +
+            '<span class="badge" id="requestBadge" hidden></span></a>' +
+          '<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">' +
+            '<div class="theme-toggle-pill theme-pill-dark active">' + acIcon('moon', 13) + '</div>' +
+            '<div class="theme-toggle-pill theme-pill-light">' + acIcon('sun', 13) + '</div>' +
+          '</button>' +
+        '</div>' +
       '</div>' +
       '<a href="profile.html?u={meId}" class="sidebar-me" id="sidebarMe">{meAvatar}' +
         '<div class="sidebar-me-info">' +
@@ -248,7 +252,6 @@ function acShellHtml() {
       '</a>' +
     '</div>' +
     '<div class="status-strip" id="statusStrip"></div>' +
-    '<a href="requests.html" class="sidebar-link" id="requestsLink" title="Ver solicitudes de amistad">' + acIcon('users', 15) + '<span class="sidebar-link-label">Solicitudes</span><span class="badge" id="requestBadge" hidden></span></a>' +
     '<div class="sidebar-section-label">Amigos <span class="count" id="friendCount"></span>' +
       '<span class="unread-badge" id="totalUnread" hidden></span></div>' +
     '<div class="user-list sidebar-list" id="friendList"></div>' +

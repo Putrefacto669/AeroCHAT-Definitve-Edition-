@@ -1131,17 +1131,19 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 }
 .count { color: var(--text-3); font-size: .72rem; font-weight: 700; margin-left: 6px; }
 
-/* Link de solicitudes en el sidebar */
-.sidebar-link {
-  display: flex; align-items: center; gap: 10px;
-  margin: 4px 8px; padding: 9px 10px; border-radius: var(--radius-sm);
-  color: var(--text-2); text-decoration: none; font-size: .88rem; font-weight: 600;
-  background: var(--surface2); border: 1px solid var(--border-soft);
-  transition: all var(--transition); flex-shrink: 0;
+/* Acceso a solicitudes en el header del sidebar */
+.sidebar-top-actions { display: flex; align-items: center; gap: 6px; }
+.sidebar-req-link {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 10px;
+  color: var(--text-2); background: var(--surface2); border: 1px solid var(--border-soft);
+  transition: all var(--transition); text-decoration: none; flex-shrink: 0;
 }
-.sidebar-link:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.sidebar-link .ac-icon { color: var(--accent); }
-.sidebar-link-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-req-link:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.sidebar-req-link .badge {
+  position: absolute; top: -5px; right: -6px; min-width: 17px; height: 17px; padding: 0 4px;
+  font-size: .62rem; border: 2px solid var(--sidebar-bg);
+}
 
 /* Sidebar list blocks */
 .sidebar-list { flex: none; max-height: 240px; }
@@ -1337,8 +1339,10 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 .call-mute.muted { background: var(--danger); color: #fff; }
 /* ── Status strip (sidebar) ── */
 .status-strip {
-  display: flex; gap: 14px; overflow-x: auto; padding: 14px 14px 10px;
-  border-bottom: 1px solid var(--border); scrollbar-width: none;
+  display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none;
+  padding: 10px 10px 8px; margin: 10px 8px 6px;
+  background: var(--surface2); border: 1px solid var(--border-soft); border-radius: var(--radius);
+  flex: none;
 }
 .status-strip::-webkit-scrollbar { display: none; }
 .status-strip-item {
@@ -1646,7 +1650,7 @@ a.status-ring:active { transform: scale(.94); }
 
 /* ── Estados: responsive ── */
 @media (max-width: 768px) {
-  .status-strip { gap: 12px; padding: 12px 12px 10px; }
+  .status-strip { gap: 10px; padding: 10px 10px 8px; margin: 10px 8px 6px; }
   .status-strip-item { min-width: 58px; max-width: 66px; }
   .status-ring { width: 44px; height: 44px; }
   .status-actions { gap: 6px; }
