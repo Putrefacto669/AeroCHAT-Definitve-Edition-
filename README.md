@@ -37,6 +37,7 @@ AeroCHhat eb/
 ├── group.html               → chat de grupo con {?id=ID}
 ├── status.html              → visor de estados (historias)
 ├── status-editor.html       → editor de estados (foto/video, stickers, recorte)
+├── requests.html            → solicitudes de amistad (pendientes / enviadas)
 ├── profile.html             → perfil de usuario con {?u=ID}
 ├── edit-profile.html        → editar mi perfil / avatar / banner
 ├── css/
@@ -53,6 +54,7 @@ AeroCHhat eb/
 │   ├── chat.js              → lógica de conversation.html
 │   ├── group.js             → lógica de group.html
 │   ├── status.js            → lógica de status.html
+│   ├── requests.js          → lógica de requests.html
 │   ├── profile.js           → lógica de profile.html
 │   └── edit-profile.js      → lógica de edit-profile.html
 ├── media/

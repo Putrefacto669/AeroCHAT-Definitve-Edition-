@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Solicitudes — AeroChat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+<div id="acToast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <div class="chat-main requests-main">
+    <div class="chat-header">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Menú"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Solicitudes</div>
+        <div class="chat-header-sub">Pendientes y enviadas</div>
+      </div>
+      <button class="btn btn-ghost btn-new-status" onclick="location.href='chat.html'" title="Volver al chat"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Volver</button>
+    </div>
+
+    <div class="requests-body">
+      <section class="requests-section">
+        <div class="requests-section-title">Pendientes <span class="badge" id="pendingCount" hidden></span></div>
+        <div class="request-list" id="pendingList"></div>
+      </section>
+
+      <section class="requests-section">
+        <div class="requests-section-title">Enviadas <span class="count" id="sentCount">0</span></div>
+        <div class="request-list" id="sentList"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/aerochat.js"></script>
+<script src="js/api.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/requests.js"></script>
+</body>
+</html>

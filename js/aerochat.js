@@ -248,8 +248,7 @@ function acShellHtml() {
       '</a>' +
     '</div>' +
     '<div class="status-strip" id="statusStrip"></div>' +
-    '<div class="sidebar-section-label">Solicitudes <span class="badge" id="requestBadge" hidden></span></div>' +
-    '<div class="user-list sidebar-list" id="requestList"></div>' +
+    '<a href="requests.html" class="sidebar-link" id="requestsLink" title="Ver solicitudes de amistad">' + acIcon('users', 15) + '<span class="sidebar-link-label">Solicitudes</span><span class="badge" id="requestBadge" hidden></span></a>' +
     '<div class="sidebar-section-label">Amigos <span class="count" id="friendCount"></span>' +
       '<span class="unread-badge" id="totalUnread" hidden></span></div>' +
     '<div class="user-list sidebar-list" id="friendList"></div>' +
@@ -355,22 +354,9 @@ function acRenderSidebar() {
   var requests = AC.users.filter(function (u) { return u.friend_state === 'incoming'; });
   var friends = AC.users.filter(function (u) { return u.friend_state === 'friends'; });
 
-  // ── Solicitudes ──
+  // ── Solicitudes (badge → página requests.html) ──
   var reqBadge = document.getElementById('requestBadge');
   if (reqBadge) { reqBadge.hidden = requests.length === 0; reqBadge.textContent = requests.length; }
-  var reqList = document.getElementById('requestList');
-  if (reqList) {
-    reqList.innerHTML = requests.map(function (u) {
-      return '<div class="req-item" data-req-from="' + u.id + '">' + acAvatarHtml(u, 'avatar avatar-md') +
-        '<div class="user-item-info"><span class="user-item-name">' + escapeHtml(u.display_name) + '</span>' +
-        '<span class="user-item-sub">Quiere ser tu amigo</span></div>' +
-        '<div class="req-actions">' +
-        '<button class="mini-btn mini-accept" title="Aceptar" onclick="acceptRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">' + acIcon('check', 13) + '</button>' +
-        '<button class="mini-btn mini-decline" title="Rechazar" onclick="declineRequest(\'' + u.id + '\',\'' + (u.request_id || '') + '\',this)">' + acIcon('close', 13) + '</button>' +
-        '</div></div>';
-    }).join('') ||
-      '<div class="sidebar-empty">Todavía no tenés amigos.<br/>Agregá contactos con el botón ＋.</div>';
-  }
 
   // ── Amigos ──
   var friendCount = document.getElementById('friendCount');

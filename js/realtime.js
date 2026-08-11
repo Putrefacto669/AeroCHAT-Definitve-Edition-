@@ -142,6 +142,7 @@ function acOnRequestChange(payload) {
         showToast((nm || 'Un usuario') + ' te envió una solicitud de amistad.', 'info');
       });
       acRefreshSidebar();
+      if (window.reqOnNewRequest) window.reqOnNewRequest();
       var wrap = document.getElementById('profileFriendActions');
       if (wrap && wrap.getAttribute('data-userid') === n.from_user) {
         wrap.setAttribute('data-requestid', n.id || '');
