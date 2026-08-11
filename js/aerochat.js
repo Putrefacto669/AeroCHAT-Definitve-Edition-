@@ -253,6 +253,7 @@ function acShellHtml() {
         '</div>' +
       '</a>' +
     '</div>' +
+    '<div class="sidebar-scroll">' +
     '<div class="status-strip" id="statusStrip"></div>' +
     '<div class="sidebar-section-label">Amigos <span class="count" id="friendCount"></span>' +
       '<span class="unread-badge" id="totalUnread" hidden></span></div>' +
@@ -263,6 +264,7 @@ function acShellHtml() {
     '<div class="sidebar-section-label">Descubrir</div>' +
     '<input type="search" class="sidebar-search" id="discoverSearch" placeholder="Buscar usuarios…"/>' +
     '<div class="user-list sidebar-list" id="discoverList"></div>' +
+    '</div>' +
     '<div class="sidebar-footer"><a href="javascript:logout()" class="btn-logout">' + acIcon('logout', 16) + '<span>Cerrar sesión</span></a></div>' +
   '</aside>' +
   '<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>' +
