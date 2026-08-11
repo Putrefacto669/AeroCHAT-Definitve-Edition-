@@ -24,7 +24,7 @@ importar stickers de sticker.ly.
 | Estados (historias de 24 h, video, me gusta) | `statuses` / `status_likes` + RLS temporal |
 | Stickers (favoritos, usados, importar sticker.ly) | `sticker_packs` / `sticker_favorites` / `sticker_usage` + Edge Function |
 | Presencia en línea y llamadas WebRTC (1:1 y grupo) | Realtime (presence + broadcast) + malla P2P |
-| Notificaciones del navegador (mensajes nuevos) | Notification API (permiso pedido al usuario, se muestran solo con la pestaña sin foco) |
+| Notificaciones del navegador (mensajes nuevos) | Notification API (permiso pedido al usuario, se muestran solo con la pestaña sin foco) + sonido discreto `media/notification.wav` |
 
 ---
 

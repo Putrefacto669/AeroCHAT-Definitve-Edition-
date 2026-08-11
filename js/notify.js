@@ -8,9 +8,43 @@
 //  ═══════════════════════════════════════════════════════════════════
 
 var AC_NOTIFY_KEY = 'ac-notify-enabled';
+var acNotifyAudio = null;
+var acNotifyUnlocked = false;
 
 function acNotifySupported() {
   return typeof window !== 'undefined' && 'Notification' in window;
+}
+
+// Desbloquear el audio con la primera interacción del usuario (los
+// navegadores bloquean el autoplay hasta que hay un gesto en la página).
+function acNotifyUnlockAudio() {
+  if (acNotifyUnlocked) return;
+  acNotifyUnlocked = true;
+  try {
+    var a = new Audio('media/notification.wav');
+    a.volume = 0.0001;
+    var p = a.play();
+    if (p && p.catch) p.catch(function () {});
+    setTimeout(function () { try { a.pause(); a.currentTime = 0; } catch (e) {} }, 100);
+  } catch (e) {}
+  document.removeEventListener('pointerdown', acNotifyUnlockAudio);
+  document.removeEventListener('touchstart', acNotifyUnlockAudio);
+  document.removeEventListener('keydown', acNotifyUnlockAudio);
+  document.removeEventListener('visibilitychange', acNotifyUnlockAudio);
+}
+document.addEventListener('pointerdown', acNotifyUnlockAudio);
+document.addEventListener('touchstart', acNotifyUnlockAudio);
+document.addEventListener('keydown', acNotifyUnlockAudio);
+
+// Sonido discreto de notificación (breve y a bajo volumen).
+function acNotifyPlaySound() {
+  try {
+    if (!acNotifyAudio) acNotifyAudio = new Audio('media/notification.wav');
+    acNotifyAudio.volume = 0.35;
+    acNotifyAudio.currentTime = 0;
+    var p = acNotifyAudio.play();
+    if (p && p.catch) p.catch(function () {});
+  } catch (e) {}
 }
 
 function acNotifyEnabled() {
@@ -121,6 +155,7 @@ function acNotifyMessage(m) {
 
   try {
     var n = new Notification(title, opts);
+    acNotifyPlaySound();
     n.onclick = function () {
       try { window.focus(); } catch (e) {}
       location.href = url;
