@@ -26,7 +26,8 @@ var AC = {
   channels: [],          // canales Realtime activos (para limpiar al salir)
   sidebarTimer: null,
   statusStrip: null,
-  typing: {}             // timers de "escribiendo…"
+  typing: {},            // timers de "escribiendo…"
+  replyTo: null           // mensaje al que se está respondiendo
 };
 
 window.acOnlineUsers = {};   // compat con los scripts de página (como el original)
@@ -103,7 +104,7 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 function jsEncode(s) {
-  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
 }
 function acRandomId() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();

@@ -8,7 +8,7 @@
 
 var statusGroups = [];
 var statusFriends = [];
-var sgIdx = 0, siIdx = 0, sTimer = null;
+var sgIdx = 0, siIdx = 0;
 var sAdvancing = false;   // evita doble avance (video terminado + barra de progreso)
 var composeMode = 'reply';
 var composeTarget = null;
@@ -28,7 +28,6 @@ function curStatus() {
 }
 
 function renderStatus() {
-  if (sTimer) clearTimeout(sTimer);
   sAdvancing = false;
   var g = statusGroups[sgIdx];
   var body = document.getElementById('statusBody');

@@ -93,7 +93,9 @@ function acSendGifFromUrl(src) {
 
 (function () {
   var inp = document.getElementById('gifSearch');
-  if (inp) inp.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); gifSearchNow(); }
-  });
+  if (inp) {
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); gifSearchNow(); }
+    });
+  }
 })();

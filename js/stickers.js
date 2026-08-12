@@ -137,8 +137,10 @@ function updateFavoriteFlag(path, on) {
 
 function toggleFavorite(path, btn) {
   acToggleStickerFavorite(path).then(function (on) {
-    if (btn) btn.innerHTML = acIcon(on ? 'star-fill' : 'star', 13);
-    btn.classList.toggle('on', on);
+    if (btn) {
+      btn.innerHTML = acIcon(on ? 'star-fill' : 'star', 13);
+      btn.classList.toggle('on', on);
+    }
     updateFavoriteFlag(path, on);
     if (stickerTab === 'fav' || stickerTab === 'used') selectStickerTab(stickerTab);
   }).catch(function () { showToast('No se pudo actualizar el favorito', 'error'); });

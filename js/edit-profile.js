@@ -78,6 +78,7 @@ function editBannerChanged(input) {
 
 function showError(msg) {
   var el = document.getElementById('editError');
+  if (!el) return;
   el.hidden = !msg;
   el.textContent = msg || '';
 }

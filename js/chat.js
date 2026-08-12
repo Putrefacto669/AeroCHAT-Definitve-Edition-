@@ -86,8 +86,6 @@ function chatInit() {
 
   chatLoadPartner().then(function () {
     return chatLoadMessages();
-  }).then(function () {
-    scrollToBottom();
   }).catch(function (e) { acToastError(e, 'No se pudo cargar la conversación'); });
 
   // Enviar

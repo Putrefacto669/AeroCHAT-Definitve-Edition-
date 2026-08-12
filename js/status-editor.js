@@ -335,7 +335,7 @@ function renderStickerTray(tab) {
   if (!items.length) { tray.innerHTML = '<div class="sticker-empty">No hay stickers acá</div>'; return; }
   tray.innerHTML = items.map(function (x) {
     var s = x.sticker;
-    return '<button type="button" class="se-sticker-cell" onclick="edAddSticker(\'' + s.path.replace(/'/g, "\\'") + '\')" title="Agregar sticker">' +
+    return '<button type="button" class="se-sticker-cell" onclick="edAddSticker(\'' + jsEncode(s.path) + '\')" title="Agregar sticker">' +
       '<img src="' + escapeHtml(s.path) + '" alt="" loading="lazy"/></button>';
   }).join('');
 }
