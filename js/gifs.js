@@ -34,10 +34,12 @@ function acGifLoad(q) {
   var grid = document.getElementById('gifResults');
   if (!grid) return;
   grid.innerHTML = '<div class="sticker-empty">Cargando…</div>';
-  var base = q
+  var url = q
     ? 'https://api.giphy.com/v1/gifs/search?q=' + encodeURIComponent(q)
     : 'https://api.giphy.com/v1/gifs/trending';
-  fetch(base + '&api_key=' + encodeURIComponent(AC_GIF_KEY) + '&limit=24&rating=g&lang=es')
+  url += (url.indexOf('?') === -1 ? '?' : '&') +
+    'api_key=' + encodeURIComponent(AC_GIF_KEY) + '&limit=24&rating=g&lang=es';
+  fetch(url)
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (!d || !d.data || !d.data.length) {
@@ -50,7 +52,7 @@ function acGifLoad(q) {
         if (!im || !im.url) return;
         var dl = g.images && (g.images.downsized || g.images.original) || null;
         var src = dl && dl.url ? dl.url : im.url;
-        html += '<button class="gif-cell" title="Enviar" onclick="acSendGif(\'' + g.id + '\',\'' + src.replace(/'/g, "\\'") + '\')"><img src="' + im.url + '" alt="GIF" loading="lazy"/></button>';
+        html += '<button class="gif-cell" title="Enviar" onclick="acSendGif(\'' + jsEncode(g.id) + '\',\'' + jsEncode(src) + '\')"><img src="' + escapeHtml(im.url) + '" alt="GIF" loading="lazy"/></button>';
       });
       grid.innerHTML = html || '<div class="sticker-empty">Sin resultados</div>';
     })

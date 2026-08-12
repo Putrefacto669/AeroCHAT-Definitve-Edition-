@@ -156,7 +156,11 @@ function roomPresenceSync(ch) {
   var others = Object.keys(members).filter(function (id) { return id !== window.acCall.myId; });
   if (window.acCall.mode === 'outgoing' && others.length) activateCall();
   if (window.acCall.mode === 'joining') activateCall();
-  others.forEach(function (id) { createPeer(id); makeOffer(id); });
+  others.forEach(function (id) {
+    var isNew = !window.acCall.peers[id];
+    createPeer(id);
+    if (isNew) makeOffer(id);
+  });
 }
 
 function roomUserLeft(ch, leftPresences) {
@@ -199,8 +203,13 @@ function sendCallSignal(remoteId, msg) {
 
 function addLocalTracksToPeer(peer) {
   if (peer.tracksAdded || !window.acCall.stream) return;
-  peer.tracksAdded = true;
-  window.acCall.stream.getTracks().forEach(function (t) { peer.pc.addTrack(t, window.acCall.stream); });
+  if (!peer.pc || peer.pc.connectionState === 'closed') return;
+  try {
+    window.acCall.stream.getTracks().forEach(function (t) { peer.pc.addTrack(t, window.acCall.stream); });
+    peer.tracksAdded = true;
+  } catch (e) {
+    console.error('AeroChat: addTrack', e);
+  }
 }
 function syncLocalTracks() {
   Object.keys(window.acCall.peers).forEach(function (id) { addLocalTracksToPeer(window.acCall.peers[id]); });
@@ -244,16 +253,29 @@ function createPeer(remoteId) {
       if (t) t.remove();
     }
   };
+  // Re-negociación automática: si se agregan tracks después de que ya se
+  // intercambió el offer/answer (p. ej. el micrófono/cámara llega después
+  // de crear el peer), hay que volver a negociar para que el otro lado
+  // reciba el audio/video.
+  pc.onnegotiationneeded = function () {
+    if (peer.makingOffer || pc.signalingState === 'closed') return;
+    makeOffer(remoteId);
+  };
   return peer;
 }
 
 function makeOffer(remoteId) {
   var peer = window.acCall.peers[remoteId];
   if (!peer || !peer.pc) return;
+  if (peer.makingOffer) return;
   peer.makingOffer = true;
   peer.pc.createOffer()
     .then(function (offer) { return peer.pc.setLocalDescription(offer); })
-    .then(function () { sendCallSignal(remoteId, { type: 'offer', sdp: peer.pc.localDescription.sdp }); })
+    .then(function () {
+      if (peer.pc.localDescription && peer.pc.signalingState !== 'stable') {
+        sendCallSignal(remoteId, { type: 'offer', sdp: peer.pc.localDescription.sdp });
+      }
+    })
     .catch(function (e) { console.error('AeroChat: offer', e); })
     .finally(function () { peer.makingOffer = false; });
 }
@@ -387,9 +409,11 @@ function attachRemoteStream(remoteId, stream) {
   var p = v.play();
   if (p && p.catch) p.catch(function (e) {
     if (e && e.name === 'NotAllowedError') {
+      // Autoplay con sonido bloqueado: arrancamos en silencio y al
+      // reproducir se desmuta (el audio ya fue autorizado por el gesto).
       v.muted = true;
-      v.play().catch(function () {});
-      v.muted = false;
+      var p2 = v.play();
+      if (p2 && p2.then) p2.then(function () { v.muted = false; }).catch(function () {});
     } else {
       console.error('AeroChat: play remoto', e);
     }
