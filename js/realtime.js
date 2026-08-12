@@ -50,40 +50,49 @@ function acSubscribePresence() {
 function acSubscribeTyping() {
   var ch = AC.supabase.channel('aerochat-typing');
   ch
-    .on('broadcast', { event: 'typing' }, function (p) { acShowTyping(p || {}); })
-    .on('broadcast', { event: 'stop_typing' }, function (p) { acClearTyping(p || {}); });
-  ch.subscribe();
+    .on('broadcast', { event: 'typing' }, function (p) { acShowTyping(p.payload || p || {}); })
+    .on('broadcast', { event: 'stop_typing' }, function (p) { acClearTyping(p.payload || p || {}); })
+    .subscribe(function (status) {
+      if (status === 'SUBSCRIBED') {
+        AC.typingReady = true;
+      }
+    });
   AC.channels.push(ch);
   AC.typingCh = ch;
 }
-function acTypingSend(payload) { if (AC.typingCh) AC.typingCh.send({ type: 'broadcast', event: 'typing', payload: payload }); }
-function acTypingStop(payload) { if (AC.typingCh) AC.typingCh.send({ type: 'broadcast', event: 'stop_typing', payload: payload }); }
+function acTypingSend(payload) {
+  if (!AC.typingCh) return;
+  AC.typingCh.send({ type: 'broadcast', event: 'typing', payload: payload }).catch(function () {});
+}
+function acTypingStop(payload) {
+  if (!AC.typingCh) return;
+  AC.typingCh.send({ type: 'broadcast', event: 'stop_typing', payload: payload }).catch(function () {});
+}
 
 function acShowTyping(p) {
-  var rel = AC.view && (
-    (AC.view.kind === 'direct' && p.to === AC.view.id) ||
-    (AC.view.kind === 'group' && p.gid === AC.view.id)
-  );
+  if (!p || !AC.view) return;
+  var rel = (AC.view.kind === 'direct' && p.to === AC.view.id) ||
+            (AC.view.kind === 'group' && p.gid === AC.view.id);
   if (!rel) return;
   var ind = document.getElementById('typingIndicator');
   if (!ind) return;
   var key = AC.view.id;
   if (AC.typingTimers && AC.typingTimers[key]) clearTimeout(AC.typingTimers[key]);
-  ind.textContent = (p.name || 'Alguien') + ' está escribiendo…';
+  var name = (p.name || 'Alguien');
+  ind.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span> ' + escapeHtml(name) + ' está escribiendo…';
   AC.typingTimers = AC.typingTimers || {};
   AC.typingTimers[key] = setTimeout(function () {
     var el = document.getElementById('typingIndicator');
-    if (el) el.textContent = '';
-  }, 2500);
+    if (el) el.innerHTML = '';
+  }, 3000);
 }
 function acClearTyping(p) {
-  var rel = AC.view && (
-    (AC.view.kind === 'direct' && p.to === AC.view.id) ||
-    (AC.view.kind === 'group' && p.gid === AC.view.id)
-  );
+  if (!p || !AC.view) return;
+  var rel = (AC.view.kind === 'direct' && p.to === AC.view.id) ||
+            (AC.view.kind === 'group' && p.gid === AC.view.id);
   if (!rel) return;
   var ind = document.getElementById('typingIndicator');
-  if (ind) ind.textContent = '';
+  if (ind) ind.innerHTML = '';
   if (AC.typingTimers && AC.typingTimers[AC.view.id]) {
     clearTimeout(AC.typingTimers[AC.view.id]);
   }

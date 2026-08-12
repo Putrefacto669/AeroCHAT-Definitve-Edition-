@@ -524,8 +524,23 @@ audio { width: 200px; height: 32px; margin-top: 4px; border-radius: 8px; }
 
 /* ── Typing indicator ───────────────────────────────── */
 .typing-indicator {
-  font-size: .75rem; color: var(--text-3); font-style: italic;
-  padding: 2px 16px 4px; min-height: 18px; transition: var(--transition);
+  font-size: .78rem; color: var(--accent); font-style: italic;
+  padding: 4px 16px 6px; min-height: 22px; transition: var(--transition);
+  display: flex; align-items: center; gap: 6px;
+}
+.typing-indicator:empty { min-height: 0; padding: 0 16px; }
+.typing-dots {
+  display: inline-flex; gap: 3px; align-items: center;
+}
+.typing-dots span {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
 }
 
 /* ── Input area ─────────────────────────────────────── */
