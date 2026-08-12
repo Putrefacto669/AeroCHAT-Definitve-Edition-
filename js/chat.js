@@ -102,8 +102,8 @@ function chatInit() {
   var typingTimer = null;
   input.addEventListener('input', function () {
     if (typingTimer) clearTimeout(typingTimer);
-    acTypingSend({ to: chatPartnerId, name: AC.me ? AC.me.display_name : '' });
-    typingTimer = setTimeout(function () { acTypingStop({ to: chatPartnerId }); }, 1200);
+    acTypingSend({ to: chatPartnerId, from: AC.authUser.id, name: AC.me ? AC.me.display_name : '' });
+    typingTimer = setTimeout(function () { acTypingStop({ to: chatPartnerId, from: AC.authUser.id }); }, 1200);
   });
 
   // Búsqueda

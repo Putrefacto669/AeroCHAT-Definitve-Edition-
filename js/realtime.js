@@ -71,7 +71,7 @@ function acTypingStop(payload) {
 
 function acShowTyping(p) {
   if (!p || !AC.view) return;
-  var rel = (AC.view.kind === 'direct' && p.to === AC.view.id) ||
+  var rel = (AC.view.kind === 'direct' && p.from === AC.view.id) ||
             (AC.view.kind === 'group' && p.gid === AC.view.id);
   if (!rel) return;
   var ind = document.getElementById('typingIndicator');
@@ -88,7 +88,7 @@ function acShowTyping(p) {
 }
 function acClearTyping(p) {
   if (!p || !AC.view) return;
-  var rel = (AC.view.kind === 'direct' && p.to === AC.view.id) ||
+  var rel = (AC.view.kind === 'direct' && p.from === AC.view.id) ||
             (AC.view.kind === 'group' && p.gid === AC.view.id);
   if (!rel) return;
   var ind = document.getElementById('typingIndicator');

@@ -246,8 +246,8 @@ function groupInit() {
   var typingTimer = null;
   input.addEventListener('input', function () {
     if (typingTimer) clearTimeout(typingTimer);
-    acTypingSend({ gid: groupState.id, name: AC.me ? AC.me.display_name : '' });
-    typingTimer = setTimeout(function () { acTypingStop({ gid: groupState.id }); }, 1200);
+    acTypingSend({ gid: groupState.id, from: AC.authUser.id, name: AC.me ? AC.me.display_name : '' });
+    typingTimer = setTimeout(function () { acTypingStop({ gid: groupState.id, from: AC.authUser.id }); }, 1200);
   });
 
   // Búsqueda
